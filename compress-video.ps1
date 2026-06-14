@@ -72,7 +72,7 @@ $xaml = @"
             <Setter Property="Minimum" Value="0"/><Setter Property="Maximum" Value="100"/>
         </Style>
     </Window.Resources>
-    <Border Background="White" CornerRadius="10" Margin="14" Effect="{Binding}">
+    <Border Background="White" CornerRadius="10" Margin="14">
         <Border.Effect>
             <DropShadowEffect BlurRadius="20" ShadowDepth="0" Color="#40000000" Opacity="0.12"/>
         </Border.Effect>
