@@ -353,8 +353,7 @@ $script:encodeState = $null  # { tag, ffArgs, audioTag, codecTag, fOut, fTmp, or
 function Start-Encode {
     param($state)
     $script:encodeState = $state
-    $state.statusText.Text
-    $state.statusText.Text = $state.statusText
+    $statusText.Text = $state.statusText
     $global:totalFrames = [math]::Round($duration * ($origFps - 0.1))
     if (($state.fpsTag) -and ($state.fpsTag -ne "orig")) { $global:totalFrames = [math]::Round($duration * [int]$state.fpsTag) }
     $encArgs = $state.ffArgs + @('-b:v', "${state.bestBitrate}k", '-movflags', '+faststart')
