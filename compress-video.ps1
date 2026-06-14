@@ -394,6 +394,24 @@ function On-EncodeDone {
         }
     }
 
+    if ($s.tag -eq "percent" -and -not $s.adjusting) {
+        $targetSize = $s.origMb * ([int]$percentSlider.Value / 100.0)
+        $ratio = $targetSize / $actualMb
+        if ($ratio -lt 0.85 -or $ratio -gt 1.15) {
+            $s.bestBitrate = [math]::Max(100, [math]::Round($s.bestBitrate * $ratio))
+            $s.adjusting = $true
+            $statusText.Text = "Adjusting to $($s.bestBitrate)k..."
+            $encArgs = $s.ffArgs + @('-b:v', "$($s.bestBitrate)k", '-movflags', '+faststart')
+            if ($s.codecTag -eq "h265") { $encArgs += '-x265-params', 'no-open-gop=1' }
+            if ($s.audioTag -eq "keep") { $encArgs += '-c:a', 'copy' }
+            elseif ($s.audioTag -eq "reencode") { $encArgs += '-c:a', 'aac', '-b:a', '128k' }
+            else { $encArgs += '-an' }
+            $encArgs += $s.fOut
+            Run-FFmpeg $encArgs { On-EncodeDone }
+            return
+        }
+    }
+
     Move-Item $s.outputFile $s.fOut -Force -ErrorAction SilentlyContinue
     try {
         $newSize = (Get-Item $s.fOut).Length
