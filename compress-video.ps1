@@ -265,7 +265,14 @@ $consoleLog = $window.FindName("ConsoleLog")
 
 function Write-Log {
     param([string]$msg)
-    try { $consoleLog.Dispatcher.Invoke([Action]{ $consoleLog.Text += "[$(Get-Date -Format HH:mm:ss)] $msg`n"; $consoleLog.Dispatcher.Invoke([Action]{ ([System.Windows.Media.VisualTreeHelper]::GetParent($consoleLog, 2)).ScrollToBottom() }, [System.Windows.Threading.DispatcherPriority]::Background) }, [System.Windows.Threading.DispatcherPriority]::Background) } catch {}
+    $consoleLog.Text += "[$(Get-Date -Format HH:mm:ss)] $msg`n"
+}
+
+function Reset-UI {
+    $CompressBtn.IsEnabled = $true
+    $BtnLoader.Visibility = [System.Windows.Visibility]::Collapsed
+    $BtnText.Visibility = [System.Windows.Visibility]::Visible
+    $progressPanel.Visibility = [System.Windows.Visibility]::Collapsed
 }
 
 $script:activeMode = "fixed"
@@ -305,6 +312,7 @@ $script:ffCallback = $null
 function Run-FFmpeg {
     param([array]$argsList, [scriptblock]$callback)
     Remove-Item $global:ffLogFile -Force -ErrorAction SilentlyContinue
+    $timer.Stop()
     $global:ffResult = @{ success = $false; error = ""; exitCode = -1 }
     $global:ffDone = $false
     $script:ffCallback = $callback
@@ -327,7 +335,7 @@ $timer.Add_Tick({
     if ($global:ffDone) { return }
     if (-not $global:ffJob) { return }
 
-    if ($global:ffJob.State -eq "Completed" -or $global:ffJob.State -eq "Failed") {
+    if ($global:ffJob.State -ne "Running") {
         $timer.Stop()
         $exitCode = Receive-Job $global:ffJob -ErrorAction SilentlyContinue
         Remove-Job $global:ffJob -Force -ErrorAction SilentlyContinue
@@ -339,7 +347,7 @@ $timer.Add_Tick({
             $global:ffResult.error = "FFmpeg exit code: $exitCode"
             $pctText.Text = "Error"
             if (Test-Path $global:ffLogFile) {
-                $lastLines = Get-Content $global:ffLogFile -Tail 5 -ErrorAction SilentlyContinue
+                $lastLines = Get-Content $global:ffLogFile -Tail 10 -ErrorAction SilentlyContinue
                 Write-Log ($lastLines -join "`n")
             }
         } else {
@@ -352,13 +360,15 @@ $timer.Add_Tick({
 
     if (Test-Path $global:ffLogFile) {
         try {
-            $tail = Get-Content $global:ffLogFile -Tail 3 -ErrorAction Stop
-            foreach ($line in $tail) {
+            $all = Get-Content $global:ffLogFile -ErrorAction Stop
+            foreach ($line in $all) {
                 if ($line -match 'frame=\s*(\d+)') {
                     $f = [int]$matches[1]
                     $pct = [math]::Min(99, [math]::Round($f / [math]::Max(1, $global:totalFrames) * 100))
-                    $progressBar.Value = $pct
-                    $pctText.Text = "$pct%"
+                    if ($pct -ne $progressBar.Value) {
+                        $progressBar.Value = $pct
+                        $pctText.Text = "$pct%"
+                    }
                     break
                 }
             }
@@ -386,22 +396,23 @@ function Start-Encode {
 function On-EncodeDone {
     $s = $script:encodeState
     if (-not $global:ffResult.success) {
-        $CompressBtn.IsEnabled = $true
-        $BtnLoader.Visibility = [System.Windows.Visibility]::Collapsed
-        $BtnText.Visibility = [System.Windows.Visibility]::Visible
-        $progressPanel.Visibility = [System.Windows.Visibility]::Collapsed
+        Write-Log "ERROR: $($global:ffResult.error)"
+        Reset-UI
         [System.Windows.Forms.MessageBox]::Show("Compression failed.`n$($global:ffResult.error)", "Error", "OK", "Error")
         return
     }
 
     try { $actualMb = [math]::Round((Get-Item $s.outputFile).Length / 1MB, 2) } catch { $actualMb = 0 }
+    Write-Log "Attempt done: $actualMb MB"
 
     if ($s.tag -eq "fixed" -and $s.pass -lt $s.maxPasses) {
         $ratio = $s.targetMb / $actualMb
+        Write-Log "Target: $($s.targetMb) MB, ratio: $([math]::Round($ratio, 2))"
         if ($ratio -lt 0.90 -or $ratio -gt 1.10) {
             $s.bestBitrate = [math]::Max(100, [math]::Round($s.bestBitrate * $ratio))
             $s.pass++
             $statusText.Text = "Attempt $($s.pass) - bitrate $($s.bestBitrate)k"
+            Write-Log "Adjusting bitrate to $($s.bestBitrate)k for attempt $($s.pass)"
             $encArgs = $s.ffArgs + @('-b:v', "$($s.bestBitrate)k", '-movflags', '+faststart')
             if ($s.codecTag -eq "h265") { $encArgs += '-x265-params', 'no-open-gop=1' }
             if ($s.audioTag -eq "keep") { $encArgs += '-c:a', 'copy' }
@@ -416,10 +427,12 @@ function On-EncodeDone {
     if ($s.tag -eq "percent" -and -not $s.adjusting) {
         $targetSize = $s.origMb * ([int]$percentSlider.Value / 100.0)
         $ratio = $targetSize / $actualMb
+        Write-Log "Target: $([math]::Round($targetSize,1)) MB, ratio: $([math]::Round($ratio,2))"
         if ($ratio -lt 0.85 -or $ratio -gt 1.15) {
             $s.bestBitrate = [math]::Max(100, [math]::Round($s.bestBitrate * $ratio))
             $s.adjusting = $true
             $statusText.Text = "Adjusting to $($s.bestBitrate)k..."
+            Write-Log "Adjusting bitrate to $($s.bestBitrate)k"
             $encArgs = $s.ffArgs + @('-b:v', "$($s.bestBitrate)k", '-movflags', '+faststart')
             if ($s.codecTag -eq "h265") { $encArgs += '-x265-params', 'no-open-gop=1' }
             if ($s.audioTag -eq "keep") { $encArgs += '-c:a', 'copy' }
@@ -439,16 +452,11 @@ function On-EncodeDone {
         $statusText.Text = "Done! $($s.origMb) MB -> $newMb MB (saved $saved MB)"
         $pctText.Text = "100%"
         $progressBar.Value = 100
-        $CompressBtn.IsEnabled = $true
-        $BtnLoader.Visibility = [System.Windows.Visibility]::Collapsed
-        $BtnText.Visibility = [System.Windows.Visibility]::Visible
+        Write-Log "Done: $($s.origMb) MB -> $newMb MB (saved $saved MB)"
+        Reset-UI
         [System.Windows.Forms.MessageBox]::Show("Video compressed successfully.`n`nOriginal: $($s.origMb) MB`nCompressed: $newMb MB`nSaved: $saved MB`n`n$(Split-Path -Leaf $s.fOut)", "Done", "OK", "Information")
-        $progressPanel.Visibility = [System.Windows.Visibility]::Collapsed
     } catch {
-        $CompressBtn.IsEnabled = $true
-        $BtnLoader.Visibility = [System.Windows.Visibility]::Collapsed
-        $BtnText.Visibility = [System.Windows.Visibility]::Visible
-        $progressPanel.Visibility = [System.Windows.Visibility]::Collapsed
+        Reset-UI
         [System.Windows.Forms.MessageBox]::Show("Error reading output: $_", "Error", "OK", "Error")
     }
 }
@@ -461,6 +469,7 @@ $CompressBtn.Add_MouseDown({
     $progressPanel.Visibility = [System.Windows.Visibility]::Visible
     $progressBar.Value = 0
     $pctText.Text = "0%"
+    $consoleLog.Text = ""
 
     $tag = Get-ActiveMode
     $resTag = ($resCombo.SelectedItem).Tag
@@ -487,17 +496,12 @@ $CompressBtn.Add_MouseDown({
 
     if ($tag -eq "fixed") {
         $targetMb = [double]::Parse($sizeText.Text, [System.Globalization.CultureInfo]::InvariantCulture)
-        if ($targetMb -le 0) {
-            $CompressBtn.IsEnabled = $true; $BtnLoader.Visibility = "Collapsed"; $BtnText.Visibility = "Visible"; $progressPanel.Visibility = "Collapsed"
-            [System.Windows.Forms.MessageBox]::Show("Enter a positive number.", "Error"); return
-        }
+        if ($targetMb -le 0) { Reset-UI; [System.Windows.Forms.MessageBox]::Show("Enter a positive number.", "Error"); return }
         $totalBitrate = [math]::Round(($targetMb * 8192) / $duration)
         $vbr = $totalBitrate - 128
-        if ($vbr -lt 100) {
-            $CompressBtn.IsEnabled = $true; $BtnLoader.Visibility = "Collapsed"; $BtnText.Visibility = "Visible"; $progressPanel.Visibility = "Collapsed"
-            [System.Windows.Forms.MessageBox]::Show("Size too small for this video.", "Error"); return
-        }
+        if ($vbr -lt 100) { Reset-UI; [System.Windows.Forms.MessageBox]::Show("Size too small for this video.", "Error"); return }
         $statusText.Text = "Attempt 1 - bitrate ${vbr}k"
+        Write-Log "Starting: target $targetMb MB, bitrate ${vbr}k"
         Start-Encode @{
             tag = "fixed"; ffArgs = $ffArgs; audioTag = $audioTag; codecTag = $codecTag
             fOut = $fOut; outputFile = $fTmp; origSize = $origSize; origMb = $origMb
@@ -510,6 +514,7 @@ $CompressBtn.Add_MouseDown({
         $totalBitrate = [math]::Round(($targetSize * 8192) / $duration)
         $vbr = [math]::Max(100, $totalBitrate - 128)
         $statusText.Text = "Encoding at ${vbr}k..."
+        Write-Log "Starting: $([int]($pct*100))% of original, bitrate ${vbr}k"
         Start-Encode @{
             tag = "percent"; ffArgs = $ffArgs; audioTag = $audioTag; codecTag = $codecTag
             fOut = $fOut; outputFile = $fOut; origSize = $origSize; origMb = $origMb
@@ -520,6 +525,7 @@ $CompressBtn.Add_MouseDown({
     } else {
         $crfVal = [int]$crfSlider.Value
         $statusText.Text = "Encoding at CRF $crfVal..."
+        Write-Log "Starting: CRF $crfVal"
         $encArgs = $ffArgs + @('-crf', "$crfVal", '-movflags', '+faststart')
         if ($codecTag -eq "h265") { $encArgs += '-x265-params', 'no-open-gop=1' }
         if ($audioTag -eq "keep") { $encArgs += '-c:a', 'copy' }
@@ -528,19 +534,16 @@ $CompressBtn.Add_MouseDown({
         $encArgs += $fOut
         Run-FFmpeg $encArgs {
             if (-not $global:ffResult.success) {
-                $CompressBtn.IsEnabled = $true; $BtnLoader.Visibility = "Collapsed"; $BtnText.Visibility = "Visible"; $progressPanel.Visibility = "Collapsed"
+                Reset-UI
                 [System.Windows.Forms.MessageBox]::Show("Compression failed.`n$($global:ffResult.error)", "Error", "OK", "Error"); return
             }
             try {
                 $newSize = (Get-Item $fOut).Length; $newMb = [math]::Round($newSize / 1MB, 1); $saved = [math]::Round(($origSize - $newSize) / 1MB, 1)
                 $statusText.Text = "Done! $origMb MB -> $newMb MB (saved $saved MB)"
                 $pctText.Text = "100%"; $progressBar.Value = 100
-                $CompressBtn.IsEnabled = $true; $BtnLoader.Visibility = "Collapsed"; $BtnText.Visibility = "Visible"
+                Reset-UI
                 [System.Windows.Forms.MessageBox]::Show("Video compressed successfully.`n`nOriginal: $origMb MB`nCompressed: $newMb MB`nSaved: $saved MB`n`n$(Split-Path -Leaf $fOut)", "Done", "OK", "Information")
-                $progressPanel.Visibility = [System.Windows.Visibility]::Collapsed
-            } catch { 
-                $CompressBtn.IsEnabled = $true; $BtnLoader.Visibility = "Collapsed"; $BtnText.Visibility = "Visible"; $progressPanel.Visibility = "Collapsed"
-                [System.Windows.Forms.MessageBox]::Show("Error: $_", "Error", "OK", "Error") }
+            } catch { Reset-UI; [System.Windows.Forms.MessageBox]::Show("Error: $_", "Error", "OK", "Error") }
         }
     }
 })
