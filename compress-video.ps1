@@ -300,9 +300,8 @@ function Run-FFmpeg {
     $global:totalFrames = [math]::Round($duration * ($origFps - 0.1))
     $global:ffJob = Start-Job -ScriptBlock {
         param($exe, $argsArr, $logPath)
-        $p = Start-Process -FilePath $exe -ArgumentList $argsArr -NoNewWindow -PassThru -RedirectStandardError $logPath
-        $p.WaitForExit()
-        $p.ExitCode
+        & $exe $argsArr 2>$logPath
+        $LASTEXITCODE
     } -ArgumentList $ffmpeg, $argsList, $global:ffLogFile
     $timer.Start()
 }
