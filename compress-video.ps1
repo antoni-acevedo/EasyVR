@@ -223,6 +223,11 @@ $xaml = @"
                     <TextBlock Grid.Column="0" x:Name="StatusText" Text="Starting..." FontSize="12" Foreground="#666"/>
                     <TextBlock Grid.Column="1" x:Name="PctText" Text="0%" FontSize="12" FontWeight="SemiBold" Foreground="#6C5CE7"/>
                 </Grid>
+                <Border Background="#1E1E2E" CornerRadius="6" Padding="8" Margin="0,8,0,0" MaxHeight="120">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                        <TextBlock x:Name="ConsoleLog" Text="" FontFamily="Cascadia Code, Consolas" FontSize="10" Foreground="#CDD6F4"/>
+                    </ScrollViewer>
+                </Border>
             </StackPanel>
         </Grid>
     </Border>
@@ -256,6 +261,12 @@ $progressPanel = $window.FindName("ProgressPanel")
 $progressBar = $window.FindName("ProgressBar")
 $statusText = $window.FindName("StatusText")
 $pctText = $window.FindName("PctText")
+$consoleLog = $window.FindName("ConsoleLog")
+
+function Write-Log {
+    param([string]$msg)
+    try { $consoleLog.Dispatcher.Invoke([Action]{ $consoleLog.Text += "[$(Get-Date -Format HH:mm:ss)] $msg`n"; $consoleLog.Dispatcher.Invoke([Action]{ ([System.Windows.Media.VisualTreeHelper]::GetParent($consoleLog, 2)).ScrollToBottom() }, [System.Windows.Threading.DispatcherPriority]::Background) }, [System.Windows.Threading.DispatcherPriority]::Background) } catch {}
+}
 
 $script:activeMode = "fixed"
 
@@ -300,7 +311,6 @@ function Run-FFmpeg {
     $global:totalFrames = [math]::Round($duration * ($origFps - 0.1))
     $global:ffJob = Start-Job -ScriptBlock {
         param($data)
-        [System.IO.File]::WriteAllText("$env:TEMP\easyvr_args.txt", ($data.Args | ForEach-Object { "[$_]" }) -join "`n")
         try {
             $p = Start-Process -FilePath $data.Exe -ArgumentList $data.Args -WindowStyle Hidden -Wait -PassThru -RedirectStandardError $data.LogPath
             $p.ExitCode
@@ -328,6 +338,10 @@ $timer.Add_Tick({
         if (-not $global:ffResult.success) {
             $global:ffResult.error = "FFmpeg exit code: $exitCode"
             $pctText.Text = "Error"
+            if (Test-Path $global:ffLogFile) {
+                $lastLines = Get-Content $global:ffLogFile -Tail 5 -ErrorAction SilentlyContinue
+                Write-Log ($lastLines -join "`n")
+            }
         } else {
             $pctText.Text = "100%"
             $progressBar.Value = 100
@@ -360,7 +374,7 @@ function Start-Encode {
     $statusText.Text = $state.statusText
     $global:totalFrames = [math]::Round($duration * ($origFps - 0.1))
     if (($state.fpsTag) -and ($state.fpsTag -ne "orig")) { $global:totalFrames = [math]::Round($duration * [int]$state.fpsTag) }
-    $encArgs = $state.ffArgs + @('-b:v', "${state.bestBitrate}k", '-movflags', '+faststart')
+    $encArgs = $state.ffArgs + @('-b:v', "$($state.bestBitrate)k", '-movflags', '+faststart')
     if ($state.codecTag -eq "h265") { $encArgs += '-x265-params', 'no-open-gop=1' }
     if ($state.audioTag -eq "keep") { $encArgs += '-c:a', 'copy' }
     elseif ($state.audioTag -eq "reencode") { $encArgs += '-c:a', 'aac', '-b:a', '128k' }
