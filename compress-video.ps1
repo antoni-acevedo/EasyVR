@@ -302,7 +302,7 @@ function Run-FFmpeg {
         param($exe, $argsArr, $logPath)
         & $exe $argsArr 2>$logPath
         $LASTEXITCODE
-    } -ArgumentList $ffmpeg, $argsList, $global:ffLogFile
+    } -ArgumentList $ffmpeg, (,$argsList), $global:ffLogFile
     $timer.Start()
 }
 
