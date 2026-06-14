@@ -47,7 +47,7 @@ if ($pathExe) {
 # === Menú contextual (HKCU — no requiere admin) ===
 $scriptPath = Join-Path $scriptDir "compress-video.ps1"
 $cmd = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" `"%1`""
-$icon = "imageres.dll,168"
+$icon = [System.IO.Path]::Combine($scriptDir, "EasyVR.ico")
 
 function Add-MenuItem {
     param([string]$RegKey)

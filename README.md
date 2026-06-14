@@ -1,5 +1,7 @@
 # EasyVR (Video Resizer)
 
+![EasyVR Logo](logo.png)
+
 Comprime videos desde el menú contextual de Windows. Seleccionás el archivo, elegís el peso deseado en MB, y lo comprime automáticamente con dos pasadas iterativas para acercarse al tamaño objetivo.
 
 ## Instalación

@@ -38,6 +38,8 @@ $form.Topmost = $true
 $form.FormBorderStyle = "FixedDialog"
 $form.MaximizeBox = $false
 $form.MinimizeBox = $false
+$icoPath = Join-Path $scriptDir "EasyVR.ico"
+if (Test-Path $icoPath) { $form.Icon = New-Object System.Drawing.Icon($icoPath) }
 
 $lbl = New-Object System.Windows.Forms.Label
 $lbl.Text = "Tamaño deseado (MB):"
