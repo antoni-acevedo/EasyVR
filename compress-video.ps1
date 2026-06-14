@@ -299,14 +299,15 @@ function Run-FFmpeg {
     $script:ffCallback = $callback
     $global:totalFrames = [math]::Round($duration * ($origFps - 0.1))
     $global:ffJob = Start-Job -ScriptBlock {
-        param($exe, $argsArr, $logPath)
+        param($data)
+        [System.IO.File]::WriteAllText("$env:TEMP\easyvr_args.txt", ($data.Args | ForEach-Object { "[$_]" }) -join "`n")
         try {
-            & $exe @argsArr 2>$logPath
-            if ($LASTEXITCODE -eq $null) { 0 } else { $LASTEXITCODE }
+            $p = Start-Process -FilePath $data.Exe -ArgumentList $data.Args -WindowStyle Hidden -Wait -PassThru -RedirectStandardError $data.LogPath
+            $p.ExitCode
         } catch {
             -1001
         }
-    } -ArgumentList $ffmpeg, (,$argsList), $global:ffLogFile
+    } -ArgumentList (,[PSCustomObject]@{ Exe = $ffmpeg; Args = $argsList; LogPath = $global:ffLogFile })
     $timer.Start()
 }
 
