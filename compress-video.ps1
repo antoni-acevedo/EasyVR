@@ -29,9 +29,9 @@ if (-not (Test-Path $ffmpeg)) {
     exit 1
 }
 
-Write-Host "Getting video info..." -ForegroundColor Cyan
-$durationStr = & $ffprobe -v error -show_entries format=duration -of csv=p=0 $FilePath
-$infoStr = & $ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate -of csv=p=0 $FilePath
+$logFile = "$env:TEMP\easyvr.log"
+$durationStr = & $ffprobe -v error -show_entries format=duration -of csv=p=0 $FilePath 2>$null
+$infoStr = & $ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate -of csv=p=0 $FilePath 2>$null
 
 $duration = [double]::Parse($durationStr, [System.Globalization.CultureInfo]::InvariantCulture)
 $infoParts = $infoStr -split ','
@@ -46,153 +46,109 @@ if ($duration -le 0) {
     exit 1
 }
 
-$hasAudio = (& $ffprobe -v error -select_streams a:0 -show_entries stream=codec_type -of csv=p=0 $FilePath) -ne ""
-
 $outNameBase = [System.IO.Path]::GetFileNameWithoutExtension($FilePath)
 
 $xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="EasyVR - Reduce Video Size"
-        Width="460" MinWidth="440" Height="480" MinHeight="460"
-        SizeToContent="Height" WindowStartupLocation="CenterScreen"
-        Topmost="True" ResizeMode="CanResize"
-        FontFamily="Segoe UI Variable, Segoe UI" Background="#F5F5F5"
-        UseLayoutRounding="True" SnapsToDevicePixels="True">
+        Title="EasyVR - Reduce Video Size" Width="460" Height="500" MinWidth="440" MinHeight="460"
+        SizeToContent="Height" WindowStartupLocation="CenterScreen" Topmost="True"
+        FontFamily="Segoe UI Variable, Segoe UI" Background="#F0EFEF"
+        UseLayoutRounding="True" SnapsToDevicePixels="True" ResizeMode="CanResize">
     <Window.Resources>
-        <Style TargetType="Button" x:Key="PrimaryBtn">
-            <Setter Property="Height" Value="44"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="15"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="8" BorderThickness="0">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Opacity" Value="0.7"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Opacity" Value="0.4"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <Style TargetType="TextBox">
-            <Setter Property="Height" Value="34"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Padding" Value="10,4"/>
-            <Setter Property="BorderBrush" Value="#D0D0D0"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="White"/>
+        <Style TargetType="TextBox" x:Key="InputBox">
+            <Setter Property="Height" Value="36"/><Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="10,4"/><Setter Property="BorderBrush" Value="#D0D0D0"/>
+            <Setter Property="BorderThickness" Value="1"/><Setter Property="Background" Value="White"/>
+            <Setter Property="TextAlignment" Value="Left"/>
         </Style>
         <Style TargetType="ComboBox">
-            <Setter Property="Height" Value="34"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Padding" Value="8,3"/>
-            <Setter Property="Background" Value="White"/>
+            <Setter Property="Height" Value="34"/><Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="8,3"/><Setter Property="Background" Value="White"/>
         </Style>
         <Style TargetType="ProgressBar">
-            <Setter Property="Height" Value="6"/>
-            <Setter Property="Foreground" Value="#6C5CE7"/>
-            <Setter Property="Background" Value="#E0E0E0"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="6"/><Setter Property="Foreground" Value="#6C5CE7"/>
+            <Setter Property="Background" Value="#E8E8E8"/><Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Minimum" Value="0"/><Setter Property="Maximum" Value="100"/>
         </Style>
     </Window.Resources>
-    <Border Background="White" CornerRadius="8" Margin="12">
-        <Grid Margin="20">
+    <Border Background="White" CornerRadius="10" Margin="14" Effect="{Binding}">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="0" Color="#40000000" Opacity="0.12"/>
+        </Border.Effect>
+        <Grid Margin="24,20,24,20">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-                <Border Width="36" Height="36" CornerRadius="8" Background="#6C5CE7">
-                    <TextBlock Text="E" FontSize="20" FontWeight="Bold" Foreground="White"
+            <Grid Grid.Row="0" Margin="0,0,0,18">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0" Width="38" Height="38" CornerRadius="9" Background="#6C5CE7">
+                    <TextBlock Text="E" FontSize="22" FontWeight="Bold" Foreground="White"
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
-                <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
-                    <TextBlock Text="EasyVR" FontSize="18" FontWeight="Bold" Foreground="#1A1A1A"/>
-                    <TextBlock Text="Video Resizer" FontSize="12" Foreground="#888" Margin="0,-2,0,0"/>
+                <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="EasyVR" FontSize="19" FontWeight="Bold" Foreground="#1A1A1A"/>
+                    <TextBlock Text="Video Resizer" FontSize="11" Foreground="#999" Margin="0,-3,0,0"/>
                 </StackPanel>
-                <TextBlock Text="$fileSizeMb MB" FontSize="12" Foreground="#AAA" VerticalAlignment="Center" Margin="10,0,0,0"/>
-            </StackPanel>
-            <TextBlock Grid.Row="1" Text="MODE" FontSize="11" FontWeight="SemiBold" Foreground="#888" Margin="0,0,0,4"/>
-            <ComboBox Grid.Row="1" x:Name="ModeCombo" Margin="0,14,0,10">
-                <ComboBoxItem Tag="fixed" IsSelected="True">Fixed Size (MB)</ComboBoxItem>
-                <ComboBoxItem Tag="percent">Percent (%)</ComboBoxItem>
-                <ComboBoxItem Tag="crf">Quality (CRF)</ComboBoxItem>
-            </ComboBox>
-            <StackPanel Grid.Row="2" x:Name="FixedPanel" Margin="0,0,0,4">
-                <TextBlock Text="TARGET SIZE (MB)" FontSize="11" FontWeight="SemiBold" Foreground="#888" Margin="0,0,0,4"/>
+                <Border Grid.Column="2" Background="#F0EEFF" CornerRadius="6" Padding="8,4" VerticalAlignment="Center">
+                    <TextBlock Text="$fileSizeMb MB" FontSize="11" FontWeight="SemiBold" Foreground="#6C5CE7"/>
+                </Border>
+            </Grid>
+            <Grid Grid.Row="1" Margin="0,0,0,14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0" x:Name="TabFixed" Background="#6C5CE7" CornerRadius="6" Padding="0,9" Cursor="Hand">
+                    <TextBlock Text="Fixed Size" FontSize="12" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center"/>
+                </Border>
+                <Border Grid.Column="2" x:Name="TabPercent" Background="#F0F0F0" CornerRadius="6" Padding="0,9" Cursor="Hand">
+                    <TextBlock Text="Percent" FontSize="12" FontWeight="SemiBold" Foreground="#666" HorizontalAlignment="Center"/>
+                </Border>
+                <Border Grid.Column="4" x:Name="TabCRF" Background="#F0F0F0" CornerRadius="6" Padding="0,9" Cursor="Hand">
+                    <TextBlock Text="Quality" FontSize="12" FontWeight="SemiBold" Foreground="#666" HorizontalAlignment="Center"/>
+                </Border>
+            </Grid>
+            <StackPanel Grid.Row="2" x:Name="FixedPanel" Margin="0,0,0,0">
+                <TextBlock Text="Target size" FontSize="11" FontWeight="SemiBold" Foreground="#888" Margin="0,0,0,5"/>
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBox Grid.Column="0" x:Name="SizeText" Text="8" MaxLength="30"/>
-                    <Border Grid.Column="1" Background="#F0F0F0" CornerRadius="0,4,4,0" Height="34" Width="50" Margin="-1,0,0,0">
-                        <TextBlock Text="MB" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#888"/>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" x:Name="SizeText" Style="{StaticResource InputBox}" Text="8" MaxLength="30"/>
+                    <Border Grid.Column="1" Background="#F4F4F4" CornerRadius="0,5,5,0" Height="36" Width="56" Margin="-1,0,0,0">
+                        <TextBlock Text="MB" FontSize="13" Foreground="#888" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Border>
                 </Grid>
             </StackPanel>
-            <StackPanel Grid.Row="2" x:Name="PercentPanel" Visibility="Collapsed" Margin="0,0,0,4">
-                <TextBlock Text="COMPRESSION RATIO" FontSize="11" FontWeight="SemiBold" Foreground="#888" Margin="0,0,0,4"/>
-                <Slider x:Name="PercentSlider" Minimum="10" Maximum="90" Value="50" TickFrequency="5" IsSnapToTickEnabled="True"
-                        Height="30" Margin="0,4,0,0" Foreground="#6C5CE7"/>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+            <StackPanel Grid.Row="2" x:Name="PercentPanel" Visibility="Collapsed" Margin="0,0,0,0">
+                <TextBlock Text="Compression ratio" FontSize="11" FontWeight="SemiBold" Foreground="#888" Margin="0,0,0,5"/>
+                <Slider x:Name="PercentSlider" Minimum="10" Maximum="90" Value="50" TickFrequency="5" IsSnapToTickEnabled="True" Height="28" Foreground="#6C5CE7" Margin="0,2,0,0"/>
+                <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="10%" FontSize="11" Foreground="#AAA"/>
                     <TextBlock Grid.Column="1" Text="90%" FontSize="11" Foreground="#AAA"/>
                 </Grid>
-                <TextBlock x:Name="PercentValue" Text="50 %" FontSize="14" FontWeight="SemiBold" Foreground="#6C5CE7" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                <TextBlock x:Name="PercentValue" Text="50 %" FontSize="13" FontWeight="SemiBold" Foreground="#6C5CE7" HorizontalAlignment="Center"/>
             </StackPanel>
-            <StackPanel Grid.Row="2" x:Name="CRFPanel" Visibility="Collapsed" Margin="0,0,0,4">
-                <TextBlock Text="QUALITY (CRF)" FontSize="11" FontWeight="SemiBold" Foreground="#888" Margin="0,0,0,4"/>
-                <TextBlock Text="18 = Best / 28 = Smaller" FontSize="11" Foreground="#AAA" Margin="0,0,0,6"/>
-                <Slider x:Name="CRFSlider" Minimum="18" Maximum="28" Value="23" TickFrequency="1" IsSnapToTickEnabled="True"
-                        Height="30" Foreground="#6C5CE7"/>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+            <StackPanel Grid.Row="2" x:Name="CRFPanel" Visibility="Collapsed" Margin="0,0,0,0">
+                <TextBlock Text="Quality (CRF)" FontSize="11" FontWeight="SemiBold" Foreground="#888" Margin="0,0,0,2"/>
+                <TextBlock Text="18 = best quality / 28 = smallest file" FontSize="10" Foreground="#AAA" Margin="0,0,0,4"/>
+                <Slider x:Name="CRFSlider" Minimum="18" Maximum="28" Value="23" TickFrequency="1" IsSnapToTickEnabled="True" Height="28" Foreground="#6C5CE7" Margin="0,2,0,0"/>
+                <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="Best" FontSize="11" Foreground="#AAA"/>
                     <TextBlock Grid.Column="1" Text="Smaller" FontSize="11" Foreground="#AAA"/>
                 </Grid>
-                <TextBlock x:Name="CRFValue" Text="CRF 23" FontSize="14" FontWeight="SemiBold" Foreground="#6C5CE7" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                <TextBlock x:Name="CRFValue" Text="CRF 23" FontSize="13" FontWeight="SemiBold" Foreground="#6C5CE7" HorizontalAlignment="Center"/>
             </StackPanel>
-            <Expander Grid.Row="3" Header="ADVANCED" FontSize="12" FontWeight="SemiBold" Foreground="#888" Margin="0,8,0,0">
-                <Border Background="#F8F8F8" CornerRadius="6" Padding="12" Margin="0,8,0,0">
+            <Expander Grid.Row="3" Header="ADVANCED" FontSize="11" FontWeight="SemiBold" Foreground="#888" Margin="0,12,0,0" ExpandDirection="Down">
+                <Border Background="#F8F7FC" CornerRadius="8" Padding="14,12" Margin="0,10,0,0">
                     <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="12"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <StackPanel Grid.Row="0" Grid.Column="0">
-                            <TextBlock Text="RESOLUTION" FontSize="10" FontWeight="SemiBold" Foreground="#888" Margin="0,0,0,3"/>
+                            <TextBlock Text="RESOLUTION" FontSize="9" FontWeight="Bold" Foreground="#888" Margin="0,0,0,3"/>
                             <ComboBox x:Name="ResCombo">
                                 <ComboBoxItem IsSelected="True" Tag="orig">Original (${origW}x${origH})</ComboBoxItem>
                                 <ComboBoxItem Tag="4k">4K (3840x2160)</ComboBoxItem>
@@ -204,7 +160,7 @@ $xaml = @"
                             </ComboBox>
                         </StackPanel>
                         <StackPanel Grid.Row="0" Grid.Column="2">
-                            <TextBlock Text="FPS" FontSize="10" FontWeight="SemiBold" Foreground="#888" Margin="0,0,0,3"/>
+                            <TextBlock Text="FPS" FontSize="9" FontWeight="Bold" Foreground="#888" Margin="0,0,0,3"/>
                             <ComboBox x:Name="FPSCombo">
                                 <ComboBoxItem IsSelected="True" Tag="orig">Original ($origFps)</ComboBoxItem>
                                 <ComboBoxItem Tag="60">60</ComboBoxItem>
@@ -215,14 +171,14 @@ $xaml = @"
                             </ComboBox>
                         </StackPanel>
                         <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,10,0,0">
-                            <TextBlock Text="CODEC" FontSize="10" FontWeight="SemiBold" Foreground="#888" Margin="0,0,0,3"/>
+                            <TextBlock Text="CODEC" FontSize="9" FontWeight="Bold" Foreground="#888" Margin="0,0,0,3"/>
                             <ComboBox x:Name="CodecCombo">
                                 <ComboBoxItem IsSelected="True" Tag="h264">H.264 (x264)</ComboBoxItem>
                                 <ComboBoxItem Tag="h265">H.265 (x265)</ComboBoxItem>
                             </ComboBox>
                         </StackPanel>
                         <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,10,0,0">
-                            <TextBlock Text="PRESET" FontSize="10" FontWeight="SemiBold" Foreground="#888" Margin="0,0,0,3"/>
+                            <TextBlock Text="PRESET" FontSize="9" FontWeight="Bold" Foreground="#888" Margin="0,0,0,3"/>
                             <ComboBox x:Name="PresetCombo">
                                 <ComboBoxItem Tag="fast">Fast</ComboBoxItem>
                                 <ComboBoxItem IsSelected="True" Tag="medium">Medium</ComboBoxItem>
@@ -230,7 +186,7 @@ $xaml = @"
                             </ComboBox>
                         </StackPanel>
                         <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,10,0,0">
-                            <TextBlock Text="AUDIO" FontSize="10" FontWeight="SemiBold" Foreground="#888" Margin="0,0,0,3"/>
+                            <TextBlock Text="AUDIO" FontSize="9" FontWeight="Bold" Foreground="#888" Margin="0,0,0,3"/>
                             <ComboBox x:Name="AudioCombo">
                                 <ComboBoxItem IsSelected="True" Tag="keep">Keep original</ComboBoxItem>
                                 <ComboBoxItem Tag="reencode">Re-encode (AAC 128k)</ComboBoxItem>
@@ -238,7 +194,7 @@ $xaml = @"
                             </ComboBox>
                         </StackPanel>
                         <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,10,0,0">
-                            <TextBlock Text="OUTPUT FORMAT" FontSize="10" FontWeight="SemiBold" Foreground="#888" Margin="0,0,0,3"/>
+                            <TextBlock Text="OUTPUT" FontSize="9" FontWeight="Bold" Foreground="#888" Margin="0,0,0,3"/>
                             <ComboBox x:Name="FormatCombo">
                                 <ComboBoxItem IsSelected="True" Tag="mp4">MP4</ComboBoxItem>
                                 <ComboBoxItem Tag="mkv">MKV</ComboBoxItem>
@@ -248,11 +204,25 @@ $xaml = @"
                     </Grid>
                 </Border>
             </Expander>
-            <Button Grid.Row="4" x:Name="CompressBtn" Style="{StaticResource PrimaryBtn}"
-                    Content="COMPRESS VIDEO" Background="#6C5CE7" Margin="0,14,0,0"/>
+            <Border Grid.Row="4" x:Name="CompressBtn" Background="#6C5CE7" CornerRadius="8" Height="46" Margin="0,16,0,0" Cursor="Hand">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter Property="Opacity" Value="0.88"/></Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Grid>
+                    <TextBlock x:Name="BtnText" Text="COMPRESS VIDEO" FontSize="15" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="BtnLoader" Text="" FontSize="15" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                </Grid>
+            </Border>
             <StackPanel Grid.Row="5" x:Name="ProgressPanel" Visibility="Collapsed" Margin="0,14,0,0">
-                <ProgressBar x:Name="ProgressBar" IsIndeterminate="True"/>
-                <TextBlock x:Name="StatusText" Text="" Margin="0,8,0,0" FontSize="13" Foreground="#666"/>
+                <ProgressBar x:Name="ProgressBar" Value="0"/>
+                <Grid Margin="0,8,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" x:Name="StatusText" Text="Starting..." FontSize="12" Foreground="#666"/>
+                    <TextBlock Grid.Column="1" x:Name="PctText" Text="0%" FontSize="12" FontWeight="SemiBold" Foreground="#6C5CE7"/>
+                </Grid>
             </StackPanel>
         </Grid>
     </Border>
@@ -262,7 +232,9 @@ $xaml = @"
 $reader = [System.Xml.XmlReader]::Create([System.IO.StringReader]::new($xaml))
 $window = [System.Windows.Markup.XamlReader]::Load($reader)
 
-$modeCombo = $window.FindName("ModeCombo")
+$TabFixed = $window.FindName("TabFixed")
+$TabPercent = $window.FindName("TabPercent")
+$TabCRF = $window.FindName("TabCRF")
 $fixedPanel = $window.FindName("FixedPanel")
 $percentPanel = $window.FindName("PercentPanel")
 $crfPanel = $window.FindName("CRFPanel")
@@ -277,27 +249,112 @@ $codecCombo = $window.FindName("CodecCombo")
 $presetCombo = $window.FindName("PresetCombo")
 $audioCombo = $window.FindName("AudioCombo")
 $formatCombo = $window.FindName("FormatCombo")
-$compressBtn = $window.FindName("CompressBtn")
+$CompressBtn = $window.FindName("CompressBtn")
+$BtnText = $window.FindName("BtnText")
+$BtnLoader = $window.FindName("BtnLoader")
 $progressPanel = $window.FindName("ProgressPanel")
 $progressBar = $window.FindName("ProgressBar")
 $statusText = $window.FindName("StatusText")
+$pctText = $window.FindName("PctText")
 
-$modeCombo.Add_SelectionChanged({
-    $tag = ($modeCombo.SelectedItem).Tag
-    $fixedPanel.Visibility = if ($tag -eq "fixed") { "Visible" } else { "Collapsed" }
-    $percentPanel.Visibility = if ($tag -eq "percent") { "Visible" } else { "Collapsed" }
-    $crfPanel.Visibility = if ($tag -eq "crf") { "Visible" } else { "Collapsed" }
-})
+$script:activeMode = "fixed"
+
+function Select-Tab {
+    param([string]$mode)
+    $tabs = @($TabFixed, $TabPercent, $TabCRF)
+    $panels = @($fixedPanel, $percentPanel, $crfPanel)
+    $modes = @("fixed","percent","crf")
+    for ($i = 0; $i -lt 3; $i++) {
+        $sel = ($mode -eq $modes[$i])
+        $tabs[$i].Background = if ($sel) { "#6C5CE7" } else { "#F0F0F0" }
+        ($tabs[$i].Child).Foreground = if ($sel) { "White" } else { "#666" }
+        $panels[$i].Visibility = if ($sel) { [System.Windows.Visibility]::Visible } else { [System.Windows.Visibility]::Collapsed }
+    }
+    if ($mode) { $script:activeMode = $mode }
+}
+
+function Get-ActiveMode {
+    return $script:activeMode
+}
+$TabFixed.Add_MouseDown({ Select-Tab "fixed" })
+$TabPercent.Add_MouseDown({ Select-Tab "percent" })
+$TabCRF.Add_MouseDown({ Select-Tab "crf" })
 
 $percentSlider.Add_ValueChanged({ $percentValue.Text = "$([int]$percentSlider.Value) %" })
 $crfSlider.Add_ValueChanged({ $crfValue.Text = "CRF $( [int]$crfSlider.Value )" })
 
-$compressBtn.Add_Click({
-    $compressBtn.IsEnabled = $false
-    $progressPanel.Visibility = "Visible"
-    $statusText.Text = "Preparing..."
+$global:ffProcess = $null
+$global:ffNextArgs = $null
+$global:ffDone = $false
+$global:totalFrames = 0
+$global:ffResult = @{ success = $false; error = "" }
+$global:ffLogFile = $logFile
 
-    $tag = ($modeCombo.SelectedItem).Tag
+function Run-FFmpeg {
+    param([array]$argsList, [string]$outFile, [bool]$waitForExit=$false)
+    Remove-Item $global:ffLogFile -Force -ErrorAction SilentlyContinue
+    $global:ffResult = @{ success = $false; error = "" }
+    $global:ffDone = $false
+    $global:totalFrames = [math]::Round($duration * ($origFps - 0.1))
+    try {
+        $global:ffProcess = Start-Process -FilePath $ffmpeg -ArgumentList $argsList -WindowStyle Hidden -PassThru -RedirectStandardError $global:ffLogFile
+        if ($waitForExit) {
+            $global:ffProcess.WaitForExit()
+            $global:ffDone = $true
+            $global:ffResult.success = ($global:ffProcess.ExitCode -eq 0)
+            if (-not $global:ffResult.success) { $global:ffResult.error = "FFmpeg exit code: $($global:ffProcess.ExitCode)" }
+        }
+    } catch {
+        $global:ffDone = $true
+        $global:ffResult.success = $false
+        $global:ffResult.error = $_.Exception.Message
+    }
+}
+
+$timer = New-Object System.Windows.Threading.DispatcherTimer
+$timer.Interval = [TimeSpan]::FromMilliseconds(500)
+$timer.Add_Tick({
+    if ($global:ffDone) { $timer.Stop(); return }
+    if (-not $global:ffProcess) { return }
+    if ($global:ffProcess.HasExited) {
+        $global:ffDone = $true
+        $global:ffResult.success = ($global:ffProcess.ExitCode -eq 0)
+        if (-not $global:ffResult.success) {
+            $global:ffResult.error = "FFmpeg exit code: $($global:ffProcess.ExitCode)"
+            $pctText.Text = "Error"
+        } else {
+            $pctText.Text = "100%"
+            $progressBar.Value = 100
+            $statusText.Text = "Done"
+        }
+        return
+    }
+    if (Test-Path $global:ffLogFile) {
+        try {
+            $tail = Get-Content $global:ffLogFile -Tail 3 -ErrorAction Stop
+            foreach ($line in $tail) {
+                if ($line -match 'frame=\s*(\d+)') {
+                    $f = [int]$matches[1]
+                    $pct = [math]::Min(99, [math]::Round($f / [math]::Max(1, $global:totalFrames) * 100))
+                    $progressBar.Value = $pct
+                    $pctText.Text = "$pct%"
+                    break
+                }
+            }
+        } catch {}
+    }
+})
+
+$CompressBtn.Add_MouseDown({
+    $CompressBtn.IsEnabled = $false
+    $BtnText.Visibility = [System.Windows.Visibility]::Collapsed
+    $BtnLoader.Text = "Processing..."
+    $BtnLoader.Visibility = [System.Windows.Visibility]::Visible
+    $progressPanel.Visibility = [System.Windows.Visibility]::Visible
+    $progressBar.Value = 0
+    $pctText.Text = "0%"
+    $tag = Get-ActiveMode
+
     $resTag = ($resCombo.SelectedItem).Tag
     $fpsTag = ($fpsCombo.SelectedItem).Tag
     $codecTag = ($codecCombo.SelectedItem).Tag
@@ -309,104 +366,123 @@ $compressBtn.Add_Click({
     $fTmp = [System.IO.Path]::GetDirectoryName($FilePath) + "\" + $outNameBase + "_temp." + $formatTag
 
     $ffArgs = @('-y', '-i', $FilePath)
-
-    if ($resTag -ne "orig") {
-        $scaleMap = @{ "4k" = "3840:2160"; "1440p" = "2560:1440"; "1080p" = "1920:1080"
-                       "720p" = "1280:720"; "480p" = "854:480"; "360p" = "640:360" }
-        $scale = $scaleMap[$resTag]
-        $ffArgs += '-vf', "scale=min($scale,iw):min($scale,ih):force_original_aspect_ratio=decrease,setdar=16/9"
+    if ($fpsTag -ne "orig") {
+        $fpsVal = [int]$fpsTag
+        $global:totalFrames = [math]::Round($duration * $fpsVal)
+        $ffArgs += '-r', $fpsTag
     }
-
-    if ($fpsTag -ne "orig") { $ffArgs += '-r', $fpsTag }
-
-    $codecMap = @{ "h264" = "libx264"; "h265" = "libx265" }
+    if ($resTag -ne "orig") {
+        $scaleMap = @{ "4k"="3840:2160"; "1440p"="2560:1440"; "1080p"="1920:1080"; "720p"="1280:720"; "480p"="854:480"; "360p"="640:360" }
+        $ffArgs += '-vf', "scale=min($($scaleMap[$resTag]),iw):min($($scaleMap[$resTag]),ih):force_original_aspect_ratio=decrease"
+    }
+    $codecMap = @{ "h264"="libx264"; "h265"="libx265" }
     $ffArgs += '-c:v', $codecMap[$codecTag]
     $ffArgs += '-preset', $presetTag
 
+    $origSize = (Get-Item $FilePath).Length
+    $origMb = [math]::Round($origSize / 1MB, 1)
+
+    function Get-AudioArgs {
+        if ($audioTag -eq "keep") { return @('-c:a','copy') }
+        elseif ($audioTag -eq "reencode") { return @('-c:a','aac','-b:a','128k') }
+        else { return @('-an') }
+    }
+
+    function Show-Result {
+        if (-not $global:ffResult.success) {
+            $CompressBtn.IsEnabled = $true
+            $BtnLoader.Visibility = [System.Windows.Visibility]::Collapsed
+            $BtnText.Visibility = [System.Windows.Visibility]::Visible
+            $progressPanel.Visibility = [System.Windows.Visibility]::Collapsed
+            [System.Windows.Forms.MessageBox]::Show("Compression failed.`n$($global:ffResult.error)", "Error", "OK", "Error")
+            return
+        }
+        try {
+            $newSize = (Get-Item $fOut).Length
+            $newMb = [math]::Round($newSize / 1MB, 1)
+            $saved = [math]::Round(($origSize - $newSize) / 1MB, 1)
+            $statusText.Text = "Done! $origMb MB -> $newMb MB (saved $saved MB)"
+            $pctText.Text = "100%"
+            $progressBar.Value = 100
+            $CompressBtn.IsEnabled = $true
+            $BtnLoader.Visibility = [System.Windows.Visibility]::Collapsed
+            $BtnText.Visibility = [System.Windows.Visibility]::Visible
+            [System.Windows.Forms.MessageBox]::Show("Video compressed successfully.`n`nOriginal: $origMb MB`nCompressed: $newMb MB`nSaved: $saved MB`n`n$(Split-Path -Leaf $fOut)", "Done", "OK", "Information")
+            $progressPanel.Visibility = [System.Windows.Visibility]::Collapsed
+        } catch {
+            $CompressBtn.IsEnabled = $true
+            $BtnLoader.Visibility = [System.Windows.Visibility]::Collapsed
+            $BtnText.Visibility = [System.Windows.Visibility]::Visible
+            $progressPanel.Visibility = [System.Windows.Visibility]::Collapsed
+            [System.Windows.Forms.MessageBox]::Show("Error reading output: $_", "Error", "OK", "Error")
+        }
+    }
+
     if ($tag -eq "fixed") {
         $targetMb = [double]::Parse($sizeText.Text, [System.Globalization.CultureInfo]::InvariantCulture)
-        if ($targetMb -le 0) { [System.Windows.Forms.MessageBox]::Show("Enter a positive number.", "Error"); return }
+        if ($targetMb -le 0) {
+            $CompressBtn.IsEnabled = $true; $BtnLoader.Visibility = "Collapsed"; $BtnText.Visibility = "Visible"; $progressPanel.Visibility = "Collapsed"
+            [System.Windows.Forms.MessageBox]::Show("Enter a positive number.", "Error"); return
+        }
         $totalBitrate = [math]::Round(($targetMb * 8192) / $duration)
         $vbr = $totalBitrate - 128
-        if ($vbr -lt 100) { [System.Windows.Forms.MessageBox]::Show("Size too small for this video.", "Error"); return }
-
+        if ($vbr -lt 100) {
+            $CompressBtn.IsEnabled = $true; $BtnLoader.Visibility = "Collapsed"; $BtnText.Visibility = "Visible"; $progressPanel.Visibility = "Collapsed"
+            [System.Windows.Forms.MessageBox]::Show("Size too small for this video.", "Error"); return
+        }
         $best = $vbr
         for ($pass = 1; $pass -le 2; $pass++) {
-            $statusText.Text = "Attempt $pass - adjusting bitrate..."
-            $encArgs = $ffArgs + @('-b:v', "${best}k")
-            if ($codecTag -eq "h265") { $encArgs += '-x265-params', "no-open-gop=1" }
-            $encArgs += '-movflags', '+faststart'
-            if ($audioTag -eq "keep") { $encArgs += '-c:a', 'copy' }
-            elseif ($audioTag -eq "reencode") { $encArgs += '-c:a', 'aac', '-b:a', '128k' }
-            else { $encArgs += '-an' }
+            $statusText.Text = "Attempt $pass - bitrate ${best}k"
+            $encArgs = $ffArgs + @('-b:v', "${best}k", '-movflags', '+faststart')
+            if ($codecTag -eq "h265") { $encArgs += '-x265-params', 'no-open-gop=1' }
+            $encArgs += Get-AudioArgs
             $encArgs += $fTmp
-            & $ffmpeg $encArgs 2>&1 | Out-Null
-            if ($LASTEXITCODE -ne 0) { [System.Windows.Forms.MessageBox]::Show("Compression error.", "Error"); return }
-
+            Run-FFmpeg $encArgs $fOut $true
+            if (-not $global:ffResult.success) { Show-Result; return }
             $actualMb = [math]::Round((Get-Item $fTmp).Length / 1MB, 2)
             $ratio = $targetMb / $actualMb
             if ($ratio -ge 0.90 -and $ratio -le 1.10 -or $pass -eq 2) {
-                Move-Item $fTmp $fOut -Force; break
+                Move-Item $fTmp $fOut -Force -ErrorAction SilentlyContinue
+                Show-Result; return
             }
             $best = [math]::Max(100, [math]::Round($best * $ratio))
         }
     } elseif ($tag -eq "percent") {
         $pct = [int]$percentSlider.Value / 100.0
-        $targetSize = $fileSizeMb * $pct
+        $targetSize = $origMb * $pct
         $totalBitrate = [math]::Round(($targetSize * 8192) / $duration)
-        $vbr = $totalBitrate - 128
-        if ($vbr -lt 100) { $vbr = 100 }
-        $statusText.Text = "Compressing at ${vbr}k..."
-        $encArgs = $ffArgs + @('-b:v', "${vbr}k")
-        if ($codecTag -eq "h265") { $encArgs += '-x265-params', "no-open-gop=1" }
-        $encArgs += '-movflags', '+faststart'
-        if ($audioTag -eq "keep") { $encArgs += '-c:a', 'copy' }
-        elseif ($audioTag -eq "reencode") { $encArgs += '-c:a', 'aac', '-b:a', '128k' }
-        else { $encArgs += '-an' }
+        $vbr = [math]::Max(100, $totalBitrate - 128)
+        $statusText.Text = "Encoding at ${vbr}k..."
+        $encArgs = $ffArgs + @('-b:v', "${vbr}k", '-movflags', '+faststart')
+        if ($codecTag -eq "h265") { $encArgs += '-x265-params', 'no-open-gop=1' }
+        $encArgs += Get-AudioArgs
         $encArgs += $fOut
-        & $ffmpeg $encArgs 2>&1 | Out-Null
-        if ($LASTEXITCODE -ne 0) { [System.Windows.Forms.MessageBox]::Show("Compression error.", "Error"); return }
-
+        Run-FFmpeg $encArgs $fOut $true
+        if (-not $global:ffResult.success) { Show-Result; return }
         $actualMb = [math]::Round((Get-Item $fOut).Length / 1MB, 2)
         $ratio = $targetSize / $actualMb
         if ($ratio -lt 0.85 -or $ratio -gt 1.15) {
             $vbr2 = [math]::Max(100, [math]::Round($vbr * $ratio))
             $statusText.Text = "Adjusting to ${vbr2}k..."
-            $encArgs2 = $ffArgs + @('-b:v', "${vbr2}k")
-            if ($codecTag -eq "h265") { $encArgs2 += '-x265-params', "no-open-gop=1" }
-            $encArgs2 += '-movflags', '+faststart'
-            if ($audioTag -eq "keep") { $encArgs2 += '-c:a', 'copy' }
-            elseif ($audioTag -eq "reencode") { $encArgs2 += '-c:a', 'aac', '-b:a', '128k' }
-            else { $encArgs2 += '-an' }
+            $encArgs2 = $ffArgs + @('-b:v', "${vbr2}k", '-movflags', '+faststart')
+            if ($codecTag -eq "h265") { $encArgs2 += '-x265-params', 'no-open-gop=1' }
+            $encArgs2 += Get-AudioArgs
             $encArgs2 += $fTmp
-            & $ffmpeg $encArgs2 2>&1 | Out-Null
-            if ($LASTEXITCODE -ne 0) { [System.Windows.Forms.MessageBox]::Show("Compression error.", "Error"); return }
-            Move-Item $fTmp $fOut -Force
+            Run-FFmpeg $encArgs2 $fOut $true
+            if (-not $global:ffResult.success) { Show-Result; return }
+            Move-Item $fTmp $fOut -Force -ErrorAction SilentlyContinue
         }
+        Show-Result
     } else {
         $crfVal = [int]$crfSlider.Value
-        $statusText.Text = "Compressing at CRF $crfVal..."
-        $encArgs = $ffArgs + @('-crf', "$crfVal")
-        if ($codecTag -eq "h265") { $encArgs += '-x265-params', "no-open-gop=1" }
-        $encArgs += '-movflags', '+faststart'
-        if ($audioTag -eq "keep") { $encArgs += '-c:a', 'copy' }
-        elseif ($audioTag -eq "reencode") { $encArgs += '-c:a', 'aac', '-b:a', '128k' }
-        else { $encArgs += '-an' }
+        $statusText.Text = "Encoding at CRF $crfVal..."
+        $encArgs = $ffArgs + @('-crf', "$crfVal", '-movflags', '+faststart')
+        if ($codecTag -eq "h265") { $encArgs += '-x265-params', 'no-open-gop=1' }
+        $encArgs += Get-AudioArgs
         $encArgs += $fOut
-        & $ffmpeg $encArgs 2>&1 | Out-Null
-        if ($LASTEXITCODE -ne 0) { [System.Windows.Forms.MessageBox]::Show("Compression error.", "Error"); return }
+        Run-FFmpeg $encArgs $fOut $true
+        Show-Result
     }
-
-    $origSize = (Get-Item $FilePath).Length
-    $newSize = (Get-Item $fOut).Length
-    $saved = [math]::Round(($origSize - $newSize) / 1MB, 1)
-    $origMb = [math]::Round($origSize / 1MB, 1)
-    $newMb = [math]::Round($newSize / 1MB, 1)
-
-    $progressPanel.Visibility = "Collapsed"
-    $compressBtn.IsEnabled = $true
-
-    [System.Windows.Forms.MessageBox]::Show("Video compressed successfully.`n`nOriginal: $origMb MB`nCompressed: $newMb MB`nSaved: $saved MB`n`n$(Split-Path -Leaf $fOut)", "Done", "OK", "Information")
 })
 
 $window.ShowDialog() | Out-Null
