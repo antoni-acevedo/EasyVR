@@ -2,39 +2,39 @@
 
 ![EasyVR Logo](logo.png)
 
-Comprime videos desde el menú contextual de Windows. Seleccionás el archivo, elegís el peso deseado en MB, y lo comprime automáticamente con dos pasadas iterativas para acercarse al tamaño objetivo.
+Compress videos from the Windows right-click context menu. Select a file, enter the target size in MB, and it compresses automatically with two iterative passes to hit the target size.
 
-## Instalación
+## Installation
 
 ```powershell
 .\install.ps1
 ```
 
-El instalador:
-1. Copia FFmpeg a la carpeta local (o lo descarga si no está en PATH)
-2. Registra la entrada **"EasyVR - Bajar peso de video..."** en el menú contextual para `.mp4`, `.mkv`, `.avi`, `.mov`, `.webm`, `.wmv`, `.flv` y más
+The installer:
+1. Copies FFmpeg to the local folder (or downloads it if not in PATH)
+2. Registers **"EasyVR - Reduce Video Size"** in the right-click menu for `.mp4`, `.mkv`, `.avi`, `.mov`, `.webm`, `.wmv`, `.flv` and more
 
-## Uso
+## Usage
 
-1. Click derecho al video → **"EasyVR - Bajar peso de video..."**
-2. Ingresá el tamaño deseado en MB
-3. La consola muestra el progreso de la compresión
-4. Al terminar, se guarda `video_comprimido.mp4` junto al original
+1. Right-click a video -> **"EasyVR - Reduce Video Size"**
+2. Enter the target size in MB
+3. The console shows compression progress
+4. When done, `video_compressed.mp4` is saved next to the original
 
-## Desinstalación
+## Uninstall
 
 ```powershell
 .\uninstall.ps1
 ```
 
-## Cómo funciona
+## How it works
 
-- Calcula el bitrate a partir del tamaño objetivo y la duración del video
-- Primera pasada con x264 + el bitrate calculado
-- Verifica el tamaño resultante: si difiere >10% del objetivo, ajusta el bitrate proporcionalmente y re-comprime
-- El archivo final usa H.264 (compatible con todos los reproductores)
+- Calculates bitrate from target size and video duration
+- First pass with x264 at the calculated bitrate
+- Checks the output size: if >10% off from target, adjusts bitrate proportionally and re-compresses
+- Final output uses H.264 (compatible with all players)
 
-## Requisitos
+## Requirements
 
 - Windows 10/11
 - PowerShell 5.1+
