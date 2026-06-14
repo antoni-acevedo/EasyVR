@@ -10,11 +10,11 @@ Comprime videos desde el menú contextual de Windows. Seleccionás el archivo, e
 
 El instalador:
 1. Copia FFmpeg a la carpeta local (o lo descarga si no está en PATH)
-2. Registra la entrada **"Bajar peso de video..."** en el menú contextual para `.mp4`, `.mkv`, `.avi`, `.mov`, `.webm`, `.wmv`, `.flv` y más
+2. Registra la entrada **"EasyVR - Bajar peso de video..."** en el menú contextual para `.mp4`, `.mkv`, `.avi`, `.mov`, `.webm`, `.wmv`, `.flv` y más
 
 ## Uso
 
-1. Click derecho al video → **"Bajar peso de video..."**
+1. Click derecho al video → **"EasyVR - Bajar peso de video..."**
 2. Ingresá el tamaño deseado en MB
 3. La consola muestra el progreso de la compresión
 4. Al terminar, se guarda `video_comprimido.mp4` junto al original
