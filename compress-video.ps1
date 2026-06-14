@@ -31,7 +31,7 @@ if (-not (Test-Path $ffmpeg)) {
 }
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = "Bajar peso de video"
+$form.Text = "EasyVR - Bajar peso de video"
 $form.Size = New-Object System.Drawing.Size(360, 180)
 $form.StartPosition = "CenterScreen"
 $form.Topmost = $true

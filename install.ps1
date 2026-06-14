@@ -53,7 +53,7 @@ function Add-MenuItem {
     param([string]$RegKey)
     $subPath = "Software\Classes\$RegKey\shell\BajarPesoVideo"
     $reg = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey($subPath)
-    $reg.SetValue("", "Bajar peso de video...")
+    $reg.SetValue("", "EasyVR - Bajar peso de video...")
     $reg.SetValue("Icon", $icon)
     $reg.Close()
     $cmdReg = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey("$subPath\command")
@@ -99,4 +99,4 @@ foreach ($ext in $progIds.Keys) {
 
 Write-Host "Menú contextual añadido para $count targets de video." -ForegroundColor Green
 Write-Host "`nInstalación completada." -ForegroundColor Cyan
-Write-Host "Haz clic derecho en cualquier video → 'Bajar peso de video...'" -ForegroundColor White
+Write-Host "Haz clic derecho en cualquier video → 'EasyVR - Bajar peso de video...'" -ForegroundColor White
