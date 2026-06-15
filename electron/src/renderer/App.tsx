@@ -152,12 +152,12 @@ export default function App() {
   };
 
   return (
-    <div className="h-full flex flex-col" style={{ background: 'var(--bg)' }}>
+    <div className="h-full flex flex-col p-6" style={{ background: 'var(--bg)' }}>
       {/* Title bar */}
       <Header fileName={fileName} fileSize={fileSize} />
 
       {/* Main content */}
-      <div className="flex-1 overflow-y-auto px-8 pb-6 pt-4">
+      <div className="flex-1 overflow-y-auto pt-4">
         {/* Mode */}
         <ModeSelector mode={mode} onChange={setMode} />
 
@@ -179,8 +179,7 @@ export default function App() {
 
         {/* Compress button */}
         <button
-          className="w-full h-11 mt-4 border-none rounded-lg text-[15px] font-semibold cursor-pointer text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 hover:opacity-85 active:opacity-75 active:scale-[0.98]"
-          style={{ background: 'var(--accent)' }}
+          className="btn-primary w-full mt-4"
           onClick={handleCompress}
           disabled={isEncoding || !filePath}
         >
