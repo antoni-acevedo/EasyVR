@@ -1,10 +1,11 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
+import * as fs from 'fs';
 import { compress, FFmpegOptions } from './ffmpeg';
 
 let mainWindow: BrowserWindow | null = null;
 
-const isDev = !app.isPackaged;
+const isDev = !fs.existsSync(path.join(__dirname, '../renderer/index.html'));
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
