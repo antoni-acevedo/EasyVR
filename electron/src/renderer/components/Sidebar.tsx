@@ -12,7 +12,7 @@ const items: { key: Mode; label: string; icon: React.ReactNode }[] = [
 
 export default function Sidebar({ mode, onChange }: Props) {
   return (
-    <aside className="flex-c justify-between flex-shrink-0 pad-20" style={{width:260, background:'#0c101d', borderRight:'1px solid rgba(15,23,42,0.5)'}}>
+    <aside className="flex-c justify-between flex-shrink-0 pad-20" style={{width:260,background:'rgba(12,16,29,0.6)',backdropFilter:'blur(30px)',WebkitBackdropFilter:'blur(30px)',borderRight:'1px solid rgba(15,23,42,0.5)'}}>
       <div>
         <div className="flex-r items-center gap-12 mar-b-32 drag-region">
           <div className="flex-r items-center justify-center font-bold text-white" style={{width:40,height:40,borderRadius:12,background:'linear-gradient(135deg,#6366F1,#4F46E5)'}}>E</div>

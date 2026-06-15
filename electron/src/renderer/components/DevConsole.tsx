@@ -24,7 +24,7 @@ export default function DevConsole({ open, onToggle, entries, onClear, onCopy }:
             <button onClick={onClear} style={{background:'#1e293b',color:'#94a3b8',border:'none',borderRadius:4,padding:'4px 12px',fontSize:10,cursor:'pointer'}}>Clear</button>
             <button onClick={onCopy} style={{background:'#1e293b',color:'#94a3b8',border:'none',borderRadius:4,padding:'4px 12px',fontSize:10,cursor:'pointer'}}>Copy All</button>
           </div>
-          <div ref={ref} className="flex-1 min-h-0 font-mono text-xs overflow-y-auto" style={{minHeight:150,background:'#05070d',border:'1px solid #0f1729',borderRadius:8,padding:16,color:'#64748b'}}>
+          <div ref={ref} className="flex-1 min-h-0 font-mono text-xs overflow-y-auto" style={{minHeight:150,background:'rgba(5,7,13,0.7)',border:'1px solid #0f1729',borderRadius:8,padding:16,color:'#64748b'}}>
             {entries.length === 0 && <div style={{color:'#334155',fontStyle:'italic'}}>No output yet</div>}
             {entries.map((e,i) => (
               <div key={i} style={{color:lineColor(e.type,e.line)}}>

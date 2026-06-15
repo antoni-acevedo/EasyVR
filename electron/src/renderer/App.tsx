@@ -62,11 +62,11 @@ export default function App() {
   };
 
   return (
-    <div className="w-full h-full flex-r overflow-hidden" style={{background:'#090D16', color:'white'}}>
+    <div className="w-full h-full flex-r overflow-hidden" style={{color:'white'}}>
       <Sidebar mode={mode} onChange={setMode} />
       <main className="flex-1 flex-c overflow-hidden pad-24 pad-t-0 pad-l-0">
         <Header fileName={fileName} />
-        <div className="flex-1 flex-c overflow-hidden pad-24 pad-t-16" style={{background:'#0f1424', border:'1px solid rgba(30,41,59,0.6)', borderRadius:12}}>
+        <div className="flex-1 flex-c overflow-hidden pad-24 pad-t-16" style={{background:'rgba(15,20,36,0.55)',backdropFilter:'blur(24px)',WebkitBackdropFilter:'blur(24px)',border:'1px solid rgba(30,41,59,0.6)',borderRadius:12}}>
           <div className="stack-24 flex-1 overflow-y-auto">
             <div>
               <div className="fluent-label">Target Size</div>
