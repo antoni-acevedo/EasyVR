@@ -325,7 +325,7 @@ function Run-FFmpeg {
     $proc.StartInfo.StandardOutputEncoding = [System.Text.Encoding]::UTF8
 
     $script:lastFrame = 0
-    $script:logDone = $false
+    $script:stderrLines = [System.Collections.ArrayList]@()
 
     $proc.Add_OutputDataReceived({
         $line = $_.Data
@@ -341,12 +341,28 @@ function Run-FFmpeg {
         }
     })
 
+    $proc.Add_ErrorDataReceived({
+        $line = $_.Data
+        if ($line) { $null = $script:stderrLines.Add($line) }
+    })
+
     $proc.Start() | Out-Null
     $proc.BeginOutputReadLine()
-    $stderr = $proc.StandardError.ReadToEnd()
-    [System.IO.File]::WriteAllText($global:ffLogFile, $stderr)
-    $proc.WaitForExit()
+    $proc.BeginErrorReadLine()
 
+    $frame = New-Object System.Windows.Threading.DispatcherFrame
+    $waitTimer = New-Object System.Windows.Threading.DispatcherTimer
+    $waitTimer.Interval = [TimeSpan]::FromMilliseconds(200)
+    $waitTimer.Add_Tick({
+        if ($proc.HasExited) {
+            $waitTimer.Stop()
+            $frame.Continue = $false
+        }
+    })
+    $waitTimer.Start()
+    [System.Windows.Threading.Dispatcher]::PushFrame($frame)
+
+    [System.IO.File]::WriteAllText($global:ffLogFile, ($script:stderrLines -join "`n"))
     $exitCode = $proc.ExitCode
     $proc.Close()
 
