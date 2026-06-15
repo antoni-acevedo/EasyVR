@@ -19,8 +19,8 @@ export default function AdvancedOptions(p: Props) {
   return (
     <div>
       <div className="flex-r items-center justify-between pad-y-16 cursor-pointer" onClick={()=>setOpen(!open)} style={{borderTop:'1px solid rgba(30,41,59,0.4)',borderBottom:'1px solid rgba(30,41,59,0.4)'}}>
-        <span style={{color:'#94a3b8',fontSize:11,letterSpacing:'0.05em',textTransform:'uppercase'}}>Advanced</span>
-        <ChevronDown size={14} style={{color:'#64748b',transition:'transform 0.2s',transform:open?'rotate(180deg)':'rotate(0)'}} />
+        <span style={{color:'#FFFFFF',fontSize:11,letterSpacing:'0.05em',textTransform:'uppercase'}}>Advanced</span>
+        <ChevronDown size={14} style={{color:'#FFFFFF',transition:'transform 0.2s',transform:open?'rotate(180deg)':'rotate(0)'}} />
       </div>
       {open && (
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginTop:16}}>

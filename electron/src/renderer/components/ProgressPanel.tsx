@@ -14,19 +14,19 @@ export default function ProgressPanel({ progress, statusText, logs, logsRef, res
         <div style={{width:`${progress}%`,height:'100%',borderRadius:2,background:'#4F46E5',transition:'width 0.3s'}} />
       </div>
       <div className="flex-r justify-between mar-t-8">
-        <span style={{color:'#94a3b8',fontSize:11}}>{statusText}</span>
-        <span style={{color:'#818cf8',fontSize:11,fontWeight:600}}>{progress}%</span>
+        <span style={{color:'#FFFFFF',fontSize:11}}>{statusText}</span>
+        <span style={{color:'#FFFFFF',fontSize:11,fontWeight:600}}>{progress}%</span>
       </div>
       {result && (
         <div className="pad-12 mar-t-12" style={{borderRadius:8,border:`1px solid ${result.success?'rgba(52,211,153,0.3)':'rgba(248,113,113,0.3)'}`,background:result.success?'rgba(52,211,153,0.1)':'rgba(248,113,113,0.1)'}}>
           {result.success ? (
             <div>
               <div style={{fontSize:13,fontWeight:600,color:'#34d399',marginBottom:4}}>✓ Video compressed</div>
-              <div style={{fontSize:11,color:'#94a3b8'}}>
+              <div style={{fontSize:11,color:'#FFFFFF'}}>
                 <div>Original: {result.origMb} MB</div>
                 <div>Compressed: {result.newMb} MB</div>
                 <div>Saved: {result.saved} MB</div>
-                <div style={{color:'#64748b',marginTop:4}}>{result.outputName}</div>
+                <div style={{color:'#FFFFFF',marginTop:4}}>{result.outputName}</div>
               </div>
               <button onClick={onCloseResult} style={{marginTop:12,background:'#4f46e5',color:'white',border:'none',borderRadius:8,padding:'6px 16px',fontSize:11,fontWeight:600,cursor:'pointer',transition:'background 0.2s'}}>OK</button>
             </div>

@@ -15,8 +15,8 @@ export default function DevConsole({ open, onToggle, entries, onClear, onCopy }:
   return (
     <div>
       <div className="flex-r items-center justify-between pad-y-12 cursor-pointer" onClick={onToggle}>
-        <span style={{color:'#64748b',fontSize:10,letterSpacing:'0.1em',textTransform:'uppercase'}}>DEVCONSOLE ({entries.length} lines)</span>
-        <ChevronDown size={14} style={{color:'#475569',transition:'transform 0.2s',transform:open?'rotate(180deg)':'rotate(0)'}} />
+        <span style={{color:'#FFFFFF',fontSize:10,letterSpacing:'0.1em',textTransform:'uppercase'}}>DEVCONSOLE ({entries.length} lines)</span>
+        <ChevronDown size={14} style={{color:'#FFFFFF',transition:'transform 0.2s',transform:open?'rotate(180deg)':'rotate(0)'}} />
       </div>
 
       {open && (
@@ -30,10 +30,10 @@ export default function DevConsole({ open, onToggle, entries, onClear, onCopy }:
             background: '#05070D',
             border: '1px solid #0f1729',
             borderRadius: 12,
-            color: '#64748b',
+            color: '#FFFFFF',
             boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)',
           }}>
-            {entries.length === 0 && <div style={{color:'#334155',fontStyle:'italic'}}>No output yet</div>}
+            {entries.length === 0 && <div style={{color:'#FFFFFF',fontStyle:'italic'}}>No output yet</div>}
             {entries.map((e,i) => (
               <div key={i} style={{color:lineColor(e.type,e.line)}}>
                 {prefixMap[e.type]||' '} {e.line}
