@@ -1,3 +1,6 @@
 ffmpeg/
 *.log
 *.log.*
+electron/node_modules/
+electron/dist/
+electron/release/
