@@ -1,17 +1,13 @@
 import React from 'react';
-
 interface Props { value: number; onChange: (v: number) => void; }
-
 export default function PercentInput({ value, onChange }: Props) {
   return (
     <div>
-      <input type="range" min={10} max={90} step={5} value={value}
-        onChange={(e) => onChange(parseInt(e.target.value))}
-        className="w-full" />
-      <div className="flex justify-between mt-1">
-        <span className="text-[11px] text-slate-500">10%</span>
-        <span className="text-sm font-semibold text-indigo-400">{value}%</span>
-        <span className="text-[11px] text-slate-500">90%</span>
+      <input type="range" min={10} max={90} step={5} value={value} onChange={e=>onChange(parseInt(e.target.value))} style={{width:'100%'}} />
+      <div className="flex-r justify-between mar-t-4">
+        <span style={{fontSize:11,color:'#64748b'}}>10%</span>
+        <span style={{fontSize:13,fontWeight:600,color:'#818cf8'}}>{value}%</span>
+        <span style={{fontSize:11,color:'#64748b'}}>90%</span>
       </div>
     </div>
   );

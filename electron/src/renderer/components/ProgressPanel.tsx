@@ -1,9 +1,7 @@
 import React, { RefObject } from 'react';
 
 interface Props {
-  progress: number;
-  statusText: string;
-  logs: string[];
+  progress: number; statusText: string; logs: string[];
   logsRef: RefObject<HTMLDivElement | null>;
   result: { success: boolean; origMb: string; newMb: string; saved: string; outputName: string } | null;
   onCloseResult: () => void;
@@ -11,30 +9,29 @@ interface Props {
 
 export default function ProgressPanel({ progress, statusText, logs, logsRef, result, onCloseResult }: Props) {
   return (
-    <div className="mb-4 flex-shrink-0">
-      <div className="h-1 rounded-full overflow-hidden bg-slate-800">
-        <div className="h-full rounded-full transition-all duration-300" style={{ width: `${progress}%`, background: '#4F46E5' }} />
+    <div className="mar-b-16 flex-shrink-0">
+      <div style={{height:4,borderRadius:2,overflow:'hidden',background:'#1e293b'}}>
+        <div style={{width:`${progress}%`,height:'100%',borderRadius:2,background:'#4F46E5',transition:'width 0.3s'}} />
       </div>
-      <div className="flex justify-between mt-2">
-        <span className="text-xs text-slate-400">{statusText}</span>
-        <span className="text-xs font-semibold text-indigo-400">{progress}%</span>
+      <div className="flex-r justify-between mar-t-8">
+        <span style={{color:'#94a3b8',fontSize:11}}>{statusText}</span>
+        <span style={{color:'#818cf8',fontSize:11,fontWeight:600}}>{progress}%</span>
       </div>
-
       {result && (
-        <div className={`rounded-lg p-3 mt-3 border ${result.success ? 'bg-emerald-900/20 border-emerald-800/30' : 'bg-red-900/20 border-red-800/30'}`}>
+        <div className="pad-12 mar-t-12" style={{borderRadius:8,border:`1px solid ${result.success?'rgba(52,211,153,0.3)':'rgba(248,113,113,0.3)'}`,background:result.success?'rgba(52,211,153,0.1)':'rgba(248,113,113,0.1)'}}>
           {result.success ? (
             <div>
-              <div className="text-sm font-semibold text-emerald-400 mb-1">✓ Video compressed</div>
-              <div className="text-xs text-slate-400 space-y-0.5">
+              <div style={{fontSize:13,fontWeight:600,color:'#34d399',marginBottom:4}}>✓ Video compressed</div>
+              <div style={{fontSize:11,color:'#94a3b8'}}>
                 <div>Original: {result.origMb} MB</div>
                 <div>Compressed: {result.newMb} MB</div>
                 <div>Saved: {result.saved} MB</div>
-                <div className="text-slate-500 mt-1">{result.outputName}</div>
+                <div style={{color:'#64748b',marginTop:4}}>{result.outputName}</div>
               </div>
-              <button onClick={onCloseResult} className="mt-3 bg-indigo-600 hover:bg-indigo-500 text-white border-none rounded-lg px-4 py-1.5 text-xs font-semibold cursor-pointer transition-colors">OK</button>
+              <button onClick={onCloseResult} style={{marginTop:12,background:'#4f46e5',color:'white',border:'none',borderRadius:8,padding:'6px 16px',fontSize:11,fontWeight:600,cursor:'pointer',transition:'background 0.2s'}}>OK</button>
             </div>
           ) : (
-            <div className="text-sm font-semibold text-red-400">✕ Compression failed</div>
+            <div style={{fontSize:13,fontWeight:600,color:'#f87171'}}>✕ Compression failed</div>
           )}
         </div>
       )}

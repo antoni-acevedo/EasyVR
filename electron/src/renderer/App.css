@@ -143,3 +143,71 @@ input[type="range"]::-webkit-slider-thumb {
   text-transform: uppercase;
   margin-bottom: 6px;
 }
+
+/* ----- CSS padding/margin utilities (no Tailwind) ----- */
+.pad-0 { padding: 0; }
+.pad-4 { padding: 4px; }
+.pad-8 { padding: 8px; }
+.pad-12 { padding: 12px; }
+.pad-16 { padding: 16px; }
+.pad-20 { padding: 20px; }
+.pad-24 { padding: 24px; }
+.pad-32 { padding: 32px; }
+
+.pad-x-12 { padding-left: 12px; padding-right: 12px; }
+.pad-x-16 { padding-left: 16px; padding-right: 16px; }
+.pad-x-24 { padding-left: 24px; padding-right: 24px; }
+.pad-x-20 { padding-left: 20px; padding-right: 20px; }
+
+.pad-y-8 { padding-top: 8px; padding-bottom: 8px; }
+.pad-y-10 { padding-top: 10px; padding-bottom: 10px; }
+.pad-y-12 { padding-top: 12px; padding-bottom: 12px; }
+.pad-y-16 { padding-top: 16px; padding-bottom: 16px; }
+
+.pad-t-0 { padding-top: 0; }
+.pad-t-24 { padding-top: 24px; }
+.pad-b-24 { padding-bottom: 24px; }
+.pad-l-20 { padding-left: 20px; }
+.pad-r-20 { padding-right: 20px; }
+.pad-l-16 { padding-left: 16px; }
+.pad-r-16 { padding-right: 16px; }
+
+.mar-0 { margin: 0; }
+.mar-b-16 { margin-bottom: 16px; }
+.mar-b-32 { margin-bottom: 32px; }
+.mar-t-24 { margin-top: 24px; }
+.mar-t-12 { margin-top: 12px; }
+.mar-t-8 { margin-top: 8px; }
+.mar-t-4 { margin-top: 4px; }
+.mar-l-8 { margin-left: 8px; }
+.mar-r-8 { margin-right: 8px; }
+
+.gap-4 { gap: 4px; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+.gap-24 { gap: 24px; }
+
+.flex-c { display: flex; flex-direction: column; }
+.flex-r { display: flex; flex-direction: row; }
+.flex-1 { flex: 1; }
+.flex-0 { flex: 0; }
+.flex-shrink-0 { flex-shrink: 0; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+.min-h-0 { min-height: 0; }
+.overflow-hidden { overflow: hidden; }
+.overflow-y-auto { overflow-y: auto; }
+.font-mono { font-family: 'Cascadia Code', 'Consolas', monospace; }
+.text-xs { font-size: 10px; }
+.text-sm { font-size: 13px; }
+.text-base { font-size: 14px; }
+
+.stack-4 > * + * { margin-top: 4px; }
+.stack-8 > * + * { margin-top: 8px; }
+.stack-16 > * + * { margin-top: 16px; }
+.stack-24 > * + * { margin-top: 24px; }
