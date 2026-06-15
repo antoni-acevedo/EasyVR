@@ -44,20 +44,21 @@ export default function App() {
     window.electronAPI.onProgress(d => { setProgress(d.percent); setStatusText(`Encoding... ${d.frame}/${d.totalFrames} frames (${d.percent}%)`); });
     window.electronAPI.onLog(m => addLog(m));
     window.electronAPI.onDone(d => { setProgress(100); setIsEncoding(false); setShowResult({success: true, origMb: (d.originalSize/(1024*1024)).toFixed(1), newMb: (d.finalSize/(1024*1024)).toFixed(1), saved: ((d.originalSize-d.finalSize)/(1024*1024)).toFixed(1), outputName: d.outputPath.split('\\').pop()||d.outputPath.split('/').pop()||''}); setStatusText('Complete!'); });
-    window.electronAPI.onError(m => { setIsEncoding(false); setStatusText('Error'); addLog(`ERROR: ${m}`); });
+    window.electronAPI.onError(m => { setIsEncoding(false); setStatusText('Error'); addLog(`ERROR: ${m}`); setRawEntries(p => [...p, {type:'stderr', line:`ERROR: ${m}`}]); });
     window.electronAPI.onRaw(d => setRawEntries(p => [...p, d]));
     return () => { window.electronAPI.removeAllListeners(); };
   }, [addLog]);
 
   const handleCompress = () => {
-    if (!filePath) return;
+    setDevConsoleOpen(true);
+    if (!filePath) { setRawEntries(p => [...p, {type:'stderr' as const, line:'ERROR: No file path received'}]); return; }
+    setRawEntries(p => [...p, {type:'cmd' as const, line:`Compressing: ${fileName}, mode: ${mode}, target: ${targetSize}${mode==='percent'?'%':mode==='crf'?' CRF':' MB'}`}]);
     setIsEncoding(true); setProgress(0); setStatusText('Starting...');
-    setLogs([]); setRawEntries([]); setShowResult(null); setDevConsoleOpen(true);
-    const opts: FFmpegOptions = { filePath, mode, resolution, fps, codec, preset, audio, format, maxPasses: 2 };
+    setLogs([]); setShowResult(null);
+    const opts: any = { filePath, mode, resolution, fps, codec, preset, audio, format, maxPasses: 2 };
     if (mode === 'fixed') { const mb = parseFloat(targetSize); if (isNaN(mb)||mb<=0) { setStatusText('Error'); setIsEncoding(false); return; } opts.targetSize = mb; }
     else if (mode === 'percent') opts.percent = percent;
     else opts.crf = crf;
-    addLog(`Starting: ${fileName}, ${mode}`);
     window.electronAPI.startCompression(opts);
   };
 
