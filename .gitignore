@@ -1,7 +1,6 @@
-ffmpeg/
+node_modules/
+dist/
+release/
+installer/*.exe
 *.log
 *.log.*
-electron/node_modules/
-electron/dist/
-electron/release/
-electron/installer/*.exe

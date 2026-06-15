@@ -23,7 +23,7 @@ WizardStyle=modern
 PrivilegesRequired=lowest
 CloseApplications=no
 UninstallDisplayIcon={app}\assets\icon.ico
-SetupIconFile=..\EasyVR.ico
+SetupIconFile=assets\EasyVR.ico
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -60,13 +60,13 @@ Source: "assets\*"; DestDir: "{app}\app\assets"; Flags: ignoreversion recursesub
 
 ; Scripts
 Source: "installer_launcher.bat"; DestDir: "{app}"; DestName: "launcher.bat"; Flags: ignoreversion
-Source: "..\install.ps1"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\uninstall.ps1"; DestDir: "{app}"; Flags: ignoreversion
+Source: "scripts\install.ps1"; DestDir: "{app}"; Flags: ignoreversion
+Source: "scripts\uninstall.ps1"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Assets root
-Source: "..\EasyVR.ico"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\logo.png"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\logoSinTexto.png"; DestDir: "{app}"; Flags: ignoreversion
+Source: "assets\EasyVR.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "assets\logo.png"; DestDir: "{app}"; Flags: ignoreversion
+Source: "assets\logoSinTexto.png"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\launcher.bat"; WorkingDir: "{app}\app"; IconFilename: "{app}\EasyVR.ico"
