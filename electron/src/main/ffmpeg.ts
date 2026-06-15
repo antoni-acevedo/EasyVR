@@ -86,7 +86,7 @@ function sendRaw(win: BrowserWindow, type: string, line: string): void {
 }
 
 function buildArgs(opts: FFmpegOptions, bitrateK: number, outputPath: string): string[] {
-  const args: string[] = ['-y', '-i', opts.filePath];
+  const args: string[] = ['-y', '-f', 'mp4', '-i', opts.filePath];
 
   if (opts.resolution !== 'orig') {
     const scaleMap: Record<string, string> = {
@@ -125,13 +125,16 @@ function getDuration(filePath: string): Promise<number> {
       '-v', 'error',
       '-show_entries', 'format=duration',
       '-of', 'csv=p=0',
+      '-f', 'mp4',
       filePath,
     ]);
     let out = '';
+    let errOut = '';
     proc.stdout.on('data', (d: Buffer) => (out += d.toString()));
+    proc.stderr.on('data', (d: Buffer) => (errOut += d.toString()));
     proc.on('close', (code) => {
       if (code === 0) resolve(parseFloat(out.trim()) || 0);
-      else reject(new Error(`ffprobe exit code: ${code}`));
+      else reject(new Error(`ffprobe duration exit: ${code}, stderr: ${errOut.slice(-200)}`));
     });
     proc.on('error', reject);
   });
@@ -152,10 +155,13 @@ async function getVideoInfo(filePath: string): Promise<{ width: number; height: 
       '-select_streams', 'v:0',
       '-show_entries', 'stream=width,height,r_frame_rate',
       '-of', 'csv=p=0',
+      '-f', 'mp4',
       filePath,
     ]);
     let out = '';
+    let errOut = '';
     proc.stdout.on('data', (d: Buffer) => (out += d.toString()));
+    proc.stderr.on('data', (d: Buffer) => (errOut += d.toString()));
     proc.on('close', (code) => {
       if (code === 0) {
         const parts = out.trim().split(',');
@@ -164,7 +170,7 @@ async function getVideoInfo(filePath: string): Promise<{ width: number; height: 
         const fpsParts = (parts[2] || '0/1').split('/');
         const fps = Math.round(parseFloat(fpsParts[0]) / parseFloat(fpsParts[1]));
         resolve({ width: w, height: h, fps });
-      } else reject(new Error(`ffprobe exit code: ${code}`));
+      } else reject(new Error(`ffprobe video info exit: ${code}, stderr: ${errOut.slice(-200)}`));
     });
     proc.on('error', reject);
   });

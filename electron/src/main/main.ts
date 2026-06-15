@@ -63,7 +63,9 @@ ipcMain.on('window-close', () => mainWindow?.close());
 
 // Get file path from command line arg %1 (argv[0]=electron, argv[1]=".", argv[2]=path)
 ipcMain.handle('get-file-path', () => {
-  return process.argv[2] || '';
+  const fp = process.argv[2] || '';
+  console.log('EasyVR argv:', process.argv.slice(2));
+  return fp;
 });
 
 // Start compression
