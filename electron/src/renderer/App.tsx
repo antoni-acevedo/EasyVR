@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Zap, ChevronDown } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import FixedSizeInput from './components/FixedSizeInput';
@@ -115,16 +115,15 @@ export default function App() {
   };
 
   return (
-    <div className="h-full flex p-6 gap-6" style={{ background: 'var(--bg-app)' }}>
+    <div className="w-screen h-screen bg-[#090D16] text-white flex overflow-hidden select-none font-sans antialiased">
       <Sidebar mode={mode} onChange={setMode} />
 
-      <div className="flex-1 flex flex-col overflow-hidden gap-4">
+      <main className="flex-1 h-full flex flex-col p-6 overflow-hidden">
         <Header fileName={fileName} />
 
-        <div className="flex-1 overflow-y-auto rounded-xl border border-slate-800/80 p-6"
-             style={{ background: 'rgba(11,15,25,0.9)' }}>
+        <div className="flex-1 bg-[#0f1424] border border-slate-800/60 rounded-xl p-6 space-y-6 flex flex-col overflow-hidden">
           {/* TARGET SIZE */}
-          <div className="mb-6">
+          <div>
             <div className="fluent-label">Target Size</div>
             {mode === 'fixed' && <FixedSizeInput value={targetSize} onChange={setTargetSize} />}
             {mode === 'percent' && <PercentInput value={percent} onChange={setPercent} />}
@@ -144,7 +143,7 @@ export default function App() {
 
           {/* COMPRESS BUTTON */}
           <button
-            className="btn-primary w-full mt-6"
+            className="w-full bg-[#1e3bb3] hover:bg-[#2546c1] text-white font-medium py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-950/50 tracking-wide text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
             onClick={handleCompress}
             disabled={isEncoding || !filePath}
           >
@@ -153,7 +152,7 @@ export default function App() {
           </button>
 
           {/* Progress + DevConsole */}
-          <div className="mt-6">
+          <div className="flex-1 min-h-0 flex flex-col">
             {(isEncoding || showResult) && (
               <ProgressPanel
                 progress={progress}
@@ -177,7 +176,7 @@ export default function App() {
             />
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

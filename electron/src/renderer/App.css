@@ -23,6 +23,8 @@ html, body, #root {
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   background: var(--bg-app);
   color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .drag-region { -webkit-app-region: drag; }

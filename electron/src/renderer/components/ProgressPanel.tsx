@@ -11,24 +11,17 @@ interface Props {
 
 export default function ProgressPanel({ progress, statusText, logs, logsRef, result, onCloseResult }: Props) {
   return (
-    <div className="mb-4">
-      {/* Progress bar */}
-      <div className="h-1.5 rounded-full overflow-hidden bg-slate-800">
-        <div className="h-full rounded-full transition-all duration-300" style={{ width: `${progress}%`, background: 'var(--accent)' }} />
+    <div className="mb-4 flex-shrink-0">
+      <div className="h-1 rounded-full overflow-hidden bg-slate-800">
+        <div className="h-full rounded-full transition-all duration-300" style={{ width: `${progress}%`, background: '#4F46E5' }} />
       </div>
       <div className="flex justify-between mt-2">
         <span className="text-xs text-slate-400">{statusText}</span>
         <span className="text-xs font-semibold text-indigo-400">{progress}%</span>
       </div>
 
-      {logs.length > 0 && (
-        <div ref={logsRef} className="console-box mt-3" style={{ maxHeight: 120 }}>
-          {logs.map((line, i) => <div key={i}>{line}</div>)}
-        </div>
-      )}
-
       {result && (
-        <div className={`rounded-lg p-4 mt-3 ${result.success ? 'bg-emerald-900/20 border border-emerald-800/30' : 'bg-red-900/20 border border-red-800/30'}`}>
+        <div className={`rounded-lg p-3 mt-3 border ${result.success ? 'bg-emerald-900/20 border-emerald-800/30' : 'bg-red-900/20 border-red-800/30'}`}>
           {result.success ? (
             <div>
               <div className="text-sm font-semibold text-emerald-400 mb-1">✓ Video compressed</div>
