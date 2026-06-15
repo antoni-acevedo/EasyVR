@@ -62,7 +62,7 @@ export default function App() {
   };
 
   return (
-    <div className="w-screen h-screen flex-r overflow-hidden font-sans select-none" style={{background:'#090D16', color:'white'}}>
+    <div className="w-screen h-screen flex-r overflow-hidden font-sans select-none" style={{color:'white'}}>
       <Sidebar mode={mode} onChange={setMode} />
       <div className="flex-1 flex-c pad-16 pad-l-8 overflow-hidden" style={{paddingBottom:16, paddingRight:16, paddingTop:16, paddingLeft:8}}>
         <Header fileName={fileName} />
