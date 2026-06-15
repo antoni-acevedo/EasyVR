@@ -81,6 +81,9 @@ function sendDone(win: BrowserWindow, data: DoneData): void {
 function sendError(win: BrowserWindow, msg: string): void {
   if (!win.isDestroyed()) win.webContents.send('compression-error', msg);
 }
+function sendRaw(win: BrowserWindow, type: string, line: string): void {
+  if (!win.isDestroyed()) win.webContents.send('ffmpeg-raw', { type, line });
+}
 
 function buildArgs(opts: FFmpegOptions, bitrateK: number, outputPath: string): string[] {
   const args: string[] = ['-y', '-i', opts.filePath];
@@ -171,6 +174,7 @@ function runFFmpegProcess(
   win: BrowserWindow,
   opts: FFmpegOptions,
   outputPath: string,
+  actualFps: number,
 ): Promise<{ exitCode: number; outputPath: string }> {
   return new Promise(async (resolve) => {
     const duration = await getDuration(opts.filePath);
@@ -207,7 +211,13 @@ function runFFmpegProcess(
 
       sendLog(win, `Pass ${pass}/${maxPasses} - ${opts.mode === 'crf' ? `CRF ${opts.crf}` : `${currentBitrate}k`}`);
 
-      const totalFrames = Math.round(duration * (opts.fps !== 'orig' ? parseInt(opts.fps) : 30));
+      const outFps = opts.fps !== 'orig' ? parseInt(opts.fps) : actualFps;
+      const totalFrames = Math.round(duration * outFps);
+      sendLog(win, `Frames: ${totalFrames} (FPS: ${outFps})`);
+
+      // Send command before execution
+      const cmdStr = `${ffmpegPath} ${args.join(' ')}`;
+      sendRaw(win, 'cmd', cmdStr);
 
       const result = await runOnePass(win, args, pass, totalFrames);
 
@@ -281,6 +291,8 @@ function runOnePass(
         const trimmed = line.trim();
         if (!trimmed) continue;
 
+        sendRaw(win, 'stdout', trimmed);
+
         if (trimmed.startsWith('frame=')) {
           lastFrame = parseInt(trimmed.split('=')[1]) || 0;
         }
@@ -303,7 +315,13 @@ function runOnePass(
 
     let stderr = '';
     proc.stderr.on('data', (chunk: Buffer) => {
-      stderr += chunk.toString();
+      const txt = chunk.toString();
+      stderr += txt;
+      const lines = txt.split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed) sendRaw(win, 'stderr', trimmed);
+      }
     });
 
     proc.on('close', (exitCode) => {
@@ -337,7 +355,7 @@ export async function compress(
     const outNameBase = path.basename(opts.filePath, path.extname(opts.filePath));
     const outputPath = path.join(path.dirname(opts.filePath), `${outNameBase}_compressed${ext}`);
 
-    const result = await runFFmpegProcess(win, opts, outputPath);
+    const result = await runFFmpegProcess(win, opts, outputPath, info.fps);
 
     if (result.exitCode !== 0) {
       sendError(win, `FFmpeg exit code: ${result.exitCode}`);

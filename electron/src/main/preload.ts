@@ -23,11 +23,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onLog: (callback: (data: unknown) => void) => {
     ipcRenderer.on('compression-log', (_e: unknown, data: unknown) => callback(data));
   },
+  onRaw: (callback: (data: unknown) => void) => {
+    ipcRenderer.on('ffmpeg-raw', (_e: unknown, data: unknown) => callback(data));
+  },
   removeAllListeners: () => {
     ipcRenderer.removeAllListeners('compression-progress');
     ipcRenderer.removeAllListeners('compression-done');
     ipcRenderer.removeAllListeners('compression-error');
     ipcRenderer.removeAllListeners('compression-log');
+    ipcRenderer.removeAllListeners('ffmpeg-raw');
   },
 });
 

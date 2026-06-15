@@ -17,6 +17,11 @@ export interface DoneData {
   error?: string;
 }
 
+export interface RawData {
+  type: 'cmd' | 'stdout' | 'stderr';
+  line: string;
+}
+
 export interface ElectronAPI {
   minimize: () => void;
   maximize: () => void;
@@ -27,6 +32,7 @@ export interface ElectronAPI {
   onDone: (callback: (data: DoneData) => void) => void;
   onError: (callback: (data: string) => void) => void;
   onLog: (callback: (data: string) => void) => void;
+  onRaw: (callback: (data: RawData) => void) => void;
   removeAllListeners: () => void;
 }
 

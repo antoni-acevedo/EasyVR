@@ -6,6 +6,7 @@ import PercentInput from './components/PercentInput';
 import CRFInput from './components/CRFInput';
 import AdvancedOptions from './components/AdvancedOptions';
 import ProgressPanel from './components/ProgressPanel';
+import DevConsole from './components/DevConsole';
 
 type Mode = 'fixed' | 'percent' | 'crf';
 
@@ -50,6 +51,9 @@ export default function App() {
   const [showResult, setShowResult] = useState<{
     success: boolean; origMb: string; newMb: string; saved: string; outputName: string;
   } | null>(null);
+
+  const [rawEntries, setRawEntries] = useState<{ type: 'cmd' | 'stdout' | 'stderr'; line: string }[]>([]);
+  const [devConsoleOpen, setDevConsoleOpen] = useState(false);
 
   const logsRef = useRef<HTMLDivElement>(null);
 
@@ -103,6 +107,10 @@ export default function App() {
       addLog(`ERROR: ${msg}`);
     });
 
+    window.electronAPI.onRaw((data) => {
+      setRawEntries(prev => [...prev, data]);
+    });
+
     return () => { window.electronAPI.removeAllListeners(); };
   }, [addLog]);
 
@@ -113,7 +121,9 @@ export default function App() {
     setProgress(0);
     setStatusText('Starting...');
     setLogs([]);
+    setRawEntries([]);
     setShowResult(null);
+    setDevConsoleOpen(true);
 
     const opts: FFmpegOptions = {
       mode,
@@ -186,6 +196,17 @@ export default function App() {
             onCloseResult={() => setShowResult(null)}
           />
         )}
+        {/* DevConsole (always visible) */}
+        <DevConsole
+          open={devConsoleOpen}
+          onToggle={() => setDevConsoleOpen(!devConsoleOpen)}
+          entries={rawEntries}
+          onClear={() => setRawEntries([])}
+          onCopy={() => {
+            const text = rawEntries.map(e => `${e.type}: ${e.line}`).join('\n');
+            navigator.clipboard.writeText(text);
+          }}
+        />
       </div>
     </div>
   );
