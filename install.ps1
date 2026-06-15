@@ -50,8 +50,8 @@ foreach ($old in $oldKeys) {
     Remove-Item -LiteralPath $old.PSPath -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-$scriptPath = Join-Path $scriptDir "compress-video.ps1"
-$cmd = "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -STA -File `"$scriptPath`" `"%1`""
+$scriptPath = Join-Path $scriptDir "electron\launcher.bat"
+$cmd = "`"$scriptPath`" `"%1`""
 $icon = [System.IO.Path]::Combine($scriptDir, "EasyVR.ico")
 
 function Add-MenuItem {
