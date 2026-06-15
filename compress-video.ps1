@@ -323,7 +323,8 @@ function Run-FFmpeg {
     $global:totalFrames = [math]::Round($duration * ($origFps - 0.1))
 
     Write-Log "Starting FFmpeg..."
-    $p = Start-Process -FilePath $ffmpeg -ArgumentList $argsList -WindowStyle Hidden -PassThru -RedirectStandardError $global:ffLogFile
+    $argString = ($argsList | ForEach-Object { if ($_ -match '[ &^()]') { "`"$_`"" } else { $_ } }) -join ' '
+    $p = Start-Process -FilePath $ffmpeg -ArgumentList $argString -WindowStyle Hidden -PassThru -RedirectStandardError $global:ffLogFile
     [System.IO.File]::AppendAllText("$env:TEMP\easyvr_forced_log.txt", "[PID] $($p.Id)`n")
 
     $frame = New-Object System.Windows.Threading.DispatcherFrame
