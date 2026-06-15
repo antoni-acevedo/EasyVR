@@ -39,7 +39,7 @@ export default function SelectBox({ label, value, options, onChange }: Props) {
         className="flex-r items-center justify-between w-full"
         style={{
           height: 40,
-          background: '#13161C',
+          background: 'rgba(19,22,28,0.4)',
           border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: 8,
           padding: '0 12px',
@@ -47,8 +47,8 @@ export default function SelectBox({ label, value, options, onChange }: Props) {
           transition: 'all 0.15s',
         }}
         onClick={() => setIsOpen(!isOpen)}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
-        onMouseLeave={e => { if (!isOpen) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.background = '#13161C'; } }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.background = 'rgba(19,22,28,0.55)'; }}
+        onMouseLeave={e => { if (!isOpen) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'rgba(19,22,28,0.4)'; } }}
       >
         <span style={{ fontSize: 12, color: '#E2E8F0' }}>{selectedLabel(options, value)}</span>
         <ChevronDown
@@ -69,7 +69,7 @@ export default function SelectBox({ label, value, options, onChange }: Props) {
             right: 0,
             zIndex: 50,
             marginTop: 4,
-            background: '#13161C',
+            background: 'rgba(19,22,28,0.95)',
             border: '1px solid rgba(255,255,255,0.1)',
             borderRadius: 8,
             overflow: 'hidden',

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Frame, Percent, Sparkles, Settings, Info } from 'lucide-react';
+import logoIcon from '../logo-icon.png';
 
 type Mode = 'fixed' | 'percent' | 'crf';
 interface Props { mode: Mode; onChange: (m: Mode) => void; }
@@ -16,7 +17,7 @@ export default function Sidebar({ mode, onChange }: Props) {
     <aside className="flex-c justify-between flex-shrink-0 pad-20" style={{width:sidebarW,background:'transparent'}}>
       <div>
         <div className="flex-r items-center gap-12 mar-b-32 drag-region">
-          <div className="flex-r items-center justify-center font-bold text-white" style={{width:36, height:36, borderRadius:10, background:'linear-gradient(135deg,#6366F1,#4F46E5)'}}>E</div>
+          <img src={logoIcon} alt="EasyVR" style={{width:36, height:36, borderRadius:10}} />
           <div>
             <div className="text-sm font-semibold" style={{color:'white'}}>EasyVR</div>
             <div style={{color:'#FFFFFF', fontSize:10}}>Video Resizer</div>
