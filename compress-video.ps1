@@ -315,7 +315,7 @@ function Run-FFmpeg {
     param([array]$argsList, [scriptblock]$callback)
     Remove-Item $global:ffLogFile -Force -ErrorAction SilentlyContinue
     Remove-Item $global:ffProgressFile -Force -ErrorAction SilentlyContinue
-    $timer.Stop()
+    Stop-Timer
     $global:ffResult = @{ success = $false; error = ""; exitCode = -1 }
     $global:ffDone = $false
     $script:progressStarted = $false
@@ -331,63 +331,80 @@ function Run-FFmpeg {
             -1001
         }
     } -ArgumentList (,[PSCustomObject]@{ Exe = $ffmpeg; Args = $argsList; LogPath = $global:ffLogFile })
-    $timer.Start()
+    Start-Timer
 }
 
-$timer = New-Object System.Windows.Threading.DispatcherTimer
-$timer.Interval = [TimeSpan]::FromMilliseconds(500)
-$timer.Add_Tick({
+$pollTimer = New-Object System.Timers.Timer
+$pollTimer.Interval = 500
+$pollTimer.AutoReset = $true
+$pollTimer.Add_Elapsed({
+    $doFinish = $false
+    $doProgress = $false
+    $progressVal = 0
+    $pctStr = ""
+    $errorMsg = ""
+    $logLines = ""
+
     if ($global:ffDone) { return }
     if (-not $global:ffJob) { return }
 
     if ($global:ffJob.State -ne "Running") {
-        $timer.Stop()
+        $pollTimer.Enabled = $false
         $exitCode = Receive-Job $global:ffJob -ErrorAction SilentlyContinue
         Remove-Job $global:ffJob -Force -ErrorAction SilentlyContinue
         $global:ffJob = $null
         $global:ffDone = $true
         $global:ffResult.exitCode = $exitCode
         $global:ffResult.success = ($exitCode -eq 0)
+        $doFinish = $true
         if (-not $global:ffResult.success) {
             $global:ffResult.error = "FFmpeg exit code: $exitCode"
-            $pctText.Text = "Error"
-            if (Test-Path $global:ffLogFile) {
-                $lastLines = Get-Content $global:ffLogFile -Tail 10 -ErrorAction SilentlyContinue
-                Write-Log ($lastLines -join "`n")
-            }
-        } else {
-            $pctText.Text = "100%"
-            $progressBar.Value = 100
+            if (Test-Path $global:ffLogFile) { $logLines = Get-Content $global:ffLogFile -Tail 10 -ErrorAction SilentlyContinue }
         }
-        if ($script:ffCallback) { & $script:ffCallback }
-        return
+    } else {
+        if (Test-Path $global:ffProgressFile) {
+            try {
+                $lines = Get-Content $global:ffProgressFile -ErrorAction Stop
+                $f = 0
+                foreach ($line in $lines) {
+                    if ($line -match '^frame=(\d+)') { $f = [int]$matches[1]; $doProgress = $true }
+                    if ($line -match '^progress=' -and $f -gt 0) {
+                        $pct = [math]::Min(99, [math]::Round($f / [math]::Max(1, $global:totalFrames) * 100))
+                        if ($pct -ne $global:lastPct) { $progressVal = $pct; $pctStr = "$pct%"; $global:lastPct = $pct }
+                        $f = 0
+                    }
+                }
+            } catch {}
+        }
     }
 
-    if (Test-Path $global:ffProgressFile) {
-        try {
-            $lines = Get-Content $global:ffProgressFile -ErrorAction Stop
-            $progressFound = $false
-            foreach ($line in $lines) {
-                if ($line -match '^frame=(\d+)') { $f = [int]$matches[1]; $progressFound = $true }
-                if ($line -match '^progress=') {
-                    if ($f -gt 0) {
-                        $pct = [math]::Min(99, [math]::Round($f / [math]::Max(1, $global:totalFrames) * 100))
-                        if ($pct -ne $progressBar.Value) {
-                            $progressBar.Value = $pct
-                            $pctText.Text = "$pct%"
-                        }
-                    }
-                    $f = 0
-                }
+    $window.Dispatcher.Invoke([Action]{
+        if ($doFinish) {
+            if (-not $global:ffResult.success) {
+                $pctText.Text = "Error"
+                if ($logLines) { Write-Log ($logLines -join "`n") }
+            } else {
+                $pctText.Text = "100%"
+                $progressBar.Value = 100
             }
-            if ($progressFound -and -not $script:progressStarted) {
-                $script:progressStarted = $true; Write-Log "Encoding started - reading progress"
-            }
-        } catch {}
-    } else {
-        if (-not $script:progressStarted) { Write-Log "Waiting for FFmpeg to start..."; $script:progressStarted = $true }
-    }
+            if ($script:ffCallback) { & $script:ffCallback }
+        } elseif ($doProgress -and -not $script:progressWarned) {
+            $script:progressWarned = $true
+            Write-Log "Encoding started"
+        }
+        if ($progressVal -gt 0) {
+            $progressBar.Value = $progressVal
+            $pctText.Text = $pctStr
+        }
+        if (-not $global:ffDone -and -not $script:progressWarned) {
+            Write-Log "Waiting for FFmpeg..."
+            $script:progressWarned = $true
+        }
+    }, [System.Windows.Threading.DispatcherPriority]::Normal)
 })
+
+function Stop-Timer { $pollTimer.Enabled = $false }
+function Start-Timer { $global:lastPct = -1; $script:progressWarned = $false; $pollTimer.Enabled = $true }
 
 $script:encodeState = $null  # { tag, ffArgs, audioTag, codecTag, fOut, fTmp, origSize, origMb, targetMb, bestBitrate, pass, maxPasses, adjusting }
 
@@ -397,7 +414,7 @@ function Start-Encode {
     $statusText.Text = $state.statusText
     $global:totalFrames = [math]::Round($duration * ($origFps - 0.1))
     if (($state.fpsTag) -and ($state.fpsTag -ne "orig")) { $global:totalFrames = [math]::Round($duration * [int]$state.fpsTag) }
-    $encArgs = $state.ffArgs + @('-b:v', "$($state.bestBitrate)k", '-movflags', '+faststart', '-progress', $global:ffProgressFile, '-progress', $global:ffProgressFile)
+    $encArgs = $state.ffArgs + @('-b:v', "$($state.bestBitrate)k", '-movflags', '+faststart', '-progress', $global:ffProgressFile)
     if ($state.codecTag -eq "h265") { $encArgs += '-x265-params', 'no-open-gop=1' }
     if ($state.audioTag -eq "keep") { $encArgs += '-c:a', 'copy' }
     elseif ($state.audioTag -eq "reencode") { $encArgs += '-c:a', 'aac', '-b:a', '128k' }
