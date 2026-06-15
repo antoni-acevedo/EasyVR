@@ -317,21 +317,21 @@ function Run-FFmpeg {
     $global:lastPct = -1
     $global:totalFrames = [math]::Round($duration * ($origFps - 0.1))
 
-    $ps = [System.Management.Automation.PowerShell]::Create()
-    $ps.AddScript({
-        param($exe, $argsArr, $logPath)
-        & $exe @argsArr 2>$logPath
-        $LASTEXITCODE
-    }).AddParameters($ffmpeg, $argsList, $global:ffLogFile) | Out-Null
-    $asyncResult = $ps.BeginInvoke()
+    $job = Start-Job -ScriptBlock {
+        param($data)
+        $p = Start-Process -FilePath $data.Exe -ArgumentList $data.Args -WindowStyle Hidden -Wait -PassThru -RedirectStandardError $data.LogPath
+        $p.ExitCode
+    } -ArgumentList (,[PSCustomObject]@{ Exe = $ffmpeg; Args = $argsList; LogPath = $global:ffLogFile })
 
-    Write-Log "FFmpeg started"
+    Write-Log "Job started, monitoring progress..."
+    $startMsg = $false
 
-    while (-not $asyncResult.IsCompleted) {
-        Start-Sleep -Milliseconds 300
+    while ($job.State -eq "Running") {
+        Start-Sleep -Milliseconds 200
         [System.Windows.Forms.Application]::DoEvents()
 
         if (Test-Path $global:ffProgressFile) {
+            if (-not $startMsg) { Write-Log "Encoding started"; $startMsg = $true }
             $lines = Get-Content $global:ffProgressFile -ErrorAction SilentlyContinue -TotalCount 200
             $f = 0
             foreach ($line in $lines) {
@@ -346,14 +346,11 @@ function Run-FFmpeg {
                     $f = 0
                 }
             }
-        } elseif ($global:lastPct -eq -1) {
-            Write-Log "Progress file not ready yet..."
-            $global:lastPct = -2
         }
     }
 
-    $exitCode = $ps.EndInvoke($asyncResult)
-    $ps.Dispose()
+    $exitCode = Receive-Job $job -ErrorAction SilentlyContinue
+    Remove-Job $job -Force -ErrorAction SilentlyContinue
 
     $global:ffDone = $true
     $global:ffResult.exitCode = $exitCode
