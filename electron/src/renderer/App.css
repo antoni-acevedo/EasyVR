@@ -21,7 +21,7 @@ html, body, #root {
   height: 100%;
   overflow: hidden;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-  background: url('./bg.png') center/cover no-repeat, #181B22;
+  background: url('./bg.png') center/cover no-repeat, #181b22d3;
   background-blend-mode: overlay;
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;

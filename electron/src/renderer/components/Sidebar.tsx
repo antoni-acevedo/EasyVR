@@ -11,7 +11,7 @@ const items: { key: Mode; label: string; icon: React.ReactNode }[] = [
 ];
 
 export default function Sidebar({ mode, onChange }: Props) {
-  const sidebarW = 150;
+  const sidebarW = 170;
   return (
     <aside className="flex-c justify-between flex-shrink-0 pad-20" style={{width:sidebarW,background:'transparent'}}>
       <div>
@@ -30,7 +30,7 @@ export default function Sidebar({ mode, onChange }: Props) {
                 className="flex-r items-center gap-12 pad-x-12 pad-y-10 cursor-pointer text-sm"
                 style={{
                   borderRadius: 10,
-                  border: active ? '1px solid rgba(255,255,255,0.3)' : '1px solid transparent',
+                  border: active ? '2px solid rgba(255,255,255,0.3)' : '1px solid transparent',
                   background: active ? 'rgba(255,255,255,0.04)' : 'transparent',
                   color: active ? '#4CC2F1' : '#FFFFFF',
                   transition: 'all 0.2s'
