@@ -11,13 +11,10 @@ function createWindow(): void {
     mainWindow = new BrowserWindow({
     width: 820,
     height: 620,
-    minWidth: 760,
-    minHeight: 560,
-    resizable: true,
     frame: false,
     transparent: true,
     backgroundColor: '#00000000',
-    hasShadow: true,
+    hasShadow: false,
     icon: path.join(__dirname, '../../assets/icon.png'),
     show: false,
     webPreferences: {
