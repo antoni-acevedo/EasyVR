@@ -12,11 +12,16 @@ const modes: { key: Mode; label: string }[] = [
 
 export default function ModeSelector({ mode, onChange }: Props) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 8px 1fr 8px 1fr', margin: '0 0 14px 0' }}>
+    <div className="grid grid-cols-[1fr_8px_1fr_8px_1fr] mb-[14px]">
       {modes.map((m, i) => (
         <React.Fragment key={m.key}>
           <div
-            className={`tab ${mode === m.key ? 'tab-active' : 'tab-inactive'}`}
+            className={`py-[9px] rounded-lg cursor-pointer text-xs font-semibold text-center transition-all duration-200 ${
+              mode === m.key
+                ? 'text-white'
+                : 'text-[#666] hover:bg-[#E5E5E5]'
+            }`}
+            style={{ background: mode === m.key ? 'var(--accent)' : '#F0F0F0' }}
             onClick={() => onChange(m.key)}
           >
             {m.label}

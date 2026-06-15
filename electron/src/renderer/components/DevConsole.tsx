@@ -13,6 +13,8 @@ interface Props {
   onCopy: () => void;
 }
 
+const btnStyle = "bg-gray-700 text-gray-300 border-none rounded px-[10px] py-[2px] text-[10px] cursor-pointer hover:bg-gray-600";
+
 export default function DevConsole({ open, onToggle, entries, onClear, onCopy }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -31,38 +33,28 @@ export default function DevConsole({ open, onToggle, entries, onClear, onCopy }:
     if (type === 'stderr') return '#FFB74D';
     return '#AAA';
   };
-  const prefixMap: Record<string, string> = {
-    cmd: '$',
-    stdout: '>',
-    stderr: '!',
-  };
+
+  const prefixMap: Record<string, string> = { cmd: '$', stdout: '>', stderr: '!' };
 
   return (
-    <div style={{ marginTop: 8 }}>
+    <div className="mt-2">
       <button
         onClick={onToggle}
-        style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)',
-          display: 'flex', alignItems: 'center', gap: 4, padding: 0,
-        }}
+        className="bg-none border-none cursor-pointer text-[11px] font-semibold flex items-center gap-1 p-0"
+        style={{ color: 'var(--text-secondary)' }}
       >
         {open ? '▼' : '▶'} DEVCONSOLE ({entries.length} lines)
       </button>
 
       {open && (
-        <div style={{ marginTop: 6 }}>
-          <div style={{ display: 'flex', gap: 4, marginBottom: 4 }}>
-            <button onClick={onClear} style={btnStyle}>Clear</button>
-            <button onClick={onCopy} style={btnStyle}>Copy All</button>
+        <div className="mt-[6px]">
+          <div className="flex gap-1 mb-[4px]">
+            <button onClick={onClear} className={btnStyle}>Clear</button>
+            <button onClick={onCopy} className={btnStyle}>Copy All</button>
           </div>
-          <div
-            ref={ref}
-            className="console-box"
-            style={{ maxHeight: 200, overflow: 'auto' }}
-          >
+          <div ref={ref} className="console-box" style={{ maxHeight: 200 }}>
             {entries.length === 0 && (
-              <div style={{ color: '#666', fontStyle: 'italic' }}>No output yet</div>
+              <div className="text-[#666] italic">No output yet</div>
             )}
             {entries.map((e, i) => (
               <div key={i} style={{ color: lineColor(e.type, e.line) }}>
@@ -75,9 +67,3 @@ export default function DevConsole({ open, onToggle, entries, onClear, onCopy }:
     </div>
   );
 }
-
-const btnStyle: React.CSSProperties = {
-  background: '#333', color: '#CCC', border: 'none',
-  borderRadius: 4, padding: '2px 10px', fontSize: 10,
-  cursor: 'pointer',
-};

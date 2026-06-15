@@ -10,39 +10,27 @@ interface Props {
   origRes: string; origFps: number;
 }
 
+const selClass = "w-full h-[34px] text-sm px-2 border border-[var(--border)] rounded outline-none bg-white";
+
 export default function AdvancedOptions(props: Props) {
   const [open, setOpen] = useState(false);
 
-  const selectStyle: React.CSSProperties = {
-    width: '100%',
-    height: 34,
-    fontSize: 13,
-    padding: '0 8px',
-    border: '1px solid var(--border)',
-    borderRadius: 5,
-    background: 'white',
-    outline: 'none',
-  };
-
   return (
-    <div style={{ marginTop: 12 }}>
+    <div className="mt-3">
       <button
         onClick={() => setOpen(!open)}
-        style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)',
-          display: 'flex', alignItems: 'center', gap: 4, padding: 0,
-        }}
+        className="bg-none border-none cursor-pointer text-[11px] font-semibold flex items-center gap-1 p-0"
+        style={{ color: 'var(--text-secondary)' }}
       >
         {open ? '▼' : '▶'} ADVANCED
       </button>
 
       {open && (
-        <div style={{ background: '#F8F7FC', borderRadius: 8, padding: 14, marginTop: 8 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 12px 1fr', gap: '10px 0' }}>
+        <div className="bg-[#F8F7FC] rounded-lg p-[14px] mt-2">
+          <div className="grid grid-cols-[1fr_12px_1fr] gap-y-[10px] gap-x-0">
             <div>
-              <label style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 3 }}>RESOLUTION</label>
-              <select value={props.resolution} onChange={(e) => props.onResolutionChange(e.target.value)} style={selectStyle}>
+              <label className="text-[9px] font-bold block mb-[3px]" style={{ color: 'var(--text-secondary)' }}>RESOLUTION</label>
+              <select value={props.resolution} onChange={(e) => props.onResolutionChange(e.target.value)} className={selClass}>
                 <option value="orig">Original ({props.origRes})</option>
                 <option value="4k">4K (3840x2160)</option>
                 <option value="1440p">1440p (2560x1440)</option>
@@ -54,8 +42,8 @@ export default function AdvancedOptions(props: Props) {
             </div>
             <div />
             <div>
-              <label style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 3 }}>FPS</label>
-              <select value={props.fps} onChange={(e) => props.onFpsChange(e.target.value)} style={selectStyle}>
+              <label className="text-[9px] font-bold block mb-[3px]" style={{ color: 'var(--text-secondary)' }}>FPS</label>
+              <select value={props.fps} onChange={(e) => props.onFpsChange(e.target.value)} className={selClass}>
                 <option value="orig">Original ({props.origFps})</option>
                 <option value="60">60</option>
                 <option value="30">30</option>
@@ -65,24 +53,24 @@ export default function AdvancedOptions(props: Props) {
               </select>
             </div>
             <div>
-              <label style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 3 }}>CODEC</label>
-              <select value={props.codec} onChange={(e) => props.onCodecChange(e.target.value)} style={selectStyle}>
+              <label className="text-[9px] font-bold block mb-[3px]" style={{ color: 'var(--text-secondary)' }}>CODEC</label>
+              <select value={props.codec} onChange={(e) => props.onCodecChange(e.target.value)} className={selClass}>
                 <option value="h264">H.264 (x264)</option>
                 <option value="h265">H.265 (x265)</option>
               </select>
             </div>
             <div />
             <div>
-              <label style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 3 }}>PRESET</label>
-              <select value={props.preset} onChange={(e) => props.onPresetChange(e.target.value)} style={selectStyle}>
+              <label className="text-[9px] font-bold block mb-[3px]" style={{ color: 'var(--text-secondary)' }}>PRESET</label>
+              <select value={props.preset} onChange={(e) => props.onPresetChange(e.target.value)} className={selClass}>
                 <option value="fast">Fast</option>
                 <option value="medium">Medium</option>
                 <option value="slow">Slow</option>
               </select>
             </div>
             <div>
-              <label style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 3 }}>AUDIO</label>
-              <select value={props.audio} onChange={(e) => props.onAudioChange(e.target.value)} style={selectStyle}>
+              <label className="text-[9px] font-bold block mb-[3px]" style={{ color: 'var(--text-secondary)' }}>AUDIO</label>
+              <select value={props.audio} onChange={(e) => props.onAudioChange(e.target.value)} className={selClass}>
                 <option value="keep">Keep original</option>
                 <option value="reencode">Re-encode (AAC 128k)</option>
                 <option value="remove">Remove audio</option>
@@ -90,8 +78,8 @@ export default function AdvancedOptions(props: Props) {
             </div>
             <div />
             <div>
-              <label style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 3 }}>OUTPUT</label>
-              <select value={props.format} onChange={(e) => props.onFormatChange(e.target.value)} style={selectStyle}>
+              <label className="text-[9px] font-bold block mb-[3px]" style={{ color: 'var(--text-secondary)' }}>OUTPUT</label>
+              <select value={props.format} onChange={(e) => props.onFormatChange(e.target.value)} className={selClass}>
                 <option value="mp4">MP4</option>
                 <option value="mkv">MKV</option>
                 <option value="webm">WebM</option>

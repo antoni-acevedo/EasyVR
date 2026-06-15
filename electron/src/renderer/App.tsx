@@ -179,7 +179,8 @@ export default function App() {
 
         {/* Compress button */}
         <button
-          className="btn-primary w-full mt-4"
+          className="w-full h-11 mt-4 border-none rounded-lg text-[15px] font-semibold cursor-pointer text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 hover:opacity-85 active:opacity-75 active:scale-[0.98]"
+          style={{ background: 'var(--accent)' }}
           onClick={handleCompress}
           disabled={isEncoding || !filePath}
         >
