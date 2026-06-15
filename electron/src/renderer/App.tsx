@@ -115,10 +115,10 @@ export default function App() {
   };
 
   return (
-    <div className="h-full flex" style={{ background: 'var(--bg-app)' }}>
+    <div className="h-full flex p-6 gap-6" style={{ background: 'var(--bg-app)' }}>
       <Sidebar mode={mode} onChange={setMode} />
 
-      <div className="flex-1 flex flex-col p-6 overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden gap-4">
         <Header fileName={fileName} />
 
         <div className="flex-1 overflow-y-auto rounded-xl border border-slate-800/80 p-6"

@@ -16,7 +16,7 @@ const items: { key: Mode; label: string }[] = [
 
 export default function Sidebar({ mode, onChange }: Props) {
   return (
-    <div className="w-72 flex flex-col justify-between p-6 border-r border-[#1E293B]/50" style={{ background: 'var(--bg-panel)' }}>
+    <div className="w-72 flex flex-col justify-between p-6" style={{ background: 'var(--bg-panel)' }}>
       {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-8 drag-region">
