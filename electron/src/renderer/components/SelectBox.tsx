@@ -39,16 +39,16 @@ export default function SelectBox({ label, value, options, onChange }: Props) {
         className="flex-r items-center justify-between w-full"
         style={{
           height: 40,
-          background: 'rgba(19,22,28,0.4)',
-          border: '1px solid rgba(255,255,255,0.08)',
+          background: 'rgba(19,22,28,0.15)',
+          border: '1px solid rgba(255,255,255,0.2)',
           borderRadius: 8,
           padding: '0 12px',
           cursor: 'pointer',
           transition: 'all 0.15s',
         }}
         onClick={() => setIsOpen(!isOpen)}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.background = 'rgba(19,22,28,0.55)'; }}
-        onMouseLeave={e => { if (!isOpen) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'rgba(19,22,28,0.4)'; } }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'; e.currentTarget.style.background = 'rgba(19,22,28,0.25)'; }}
+        onMouseLeave={e => { if (!isOpen) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.background = 'rgba(19,22,28,0.15)'; } }}
       >
         <span style={{ fontSize: 12, color: '#E2E8F0' }}>{selectedLabel(options, value)}</span>
         <ChevronDown
