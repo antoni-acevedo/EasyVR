@@ -1,24 +1,25 @@
 import React from 'react';
-import { Ruler, Percent, Sparkles, Settings, Info } from 'lucide-react';
+import { Frame, Percent, Sparkles, Settings, Info } from 'lucide-react';
 
 type Mode = 'fixed' | 'percent' | 'crf';
 interface Props { mode: Mode; onChange: (m: Mode) => void; }
 
 const items: { key: Mode; label: string; icon: React.ReactNode }[] = [
-  { key: 'fixed', label: 'Fixed Size', icon: <Ruler size={16} /> },
-  { key: 'percent', label: 'Percent', icon: <Percent size={16} /> },
-  { key: 'crf', label: 'Quality', icon: <Sparkles size={16} /> },
+  { key: 'fixed',   label: 'Fixed Size', icon: <Frame size={16} /> },
+  { key: 'percent', label: 'Percent',    icon: <Percent size={16} /> },
+  { key: 'crf',     label: 'Quality',    icon: <Sparkles size={16} /> },
 ];
 
 export default function Sidebar({ mode, onChange }: Props) {
+  const sidebarW = 250;
   return (
-    <aside className="flex-c justify-between flex-shrink-0 pad-20" style={{width:260,background:'rgba(12,16,29,0.6)',backdropFilter:'blur(30px)',WebkitBackdropFilter:'blur(30px)',borderRight:'1px solid rgba(15,23,42,0.5)'}}>
+    <aside className="flex-c justify-between flex-shrink-0 pad-20" style={{width:sidebarW,background:'transparent'}}>
       <div>
         <div className="flex-r items-center gap-12 mar-b-32 drag-region">
-          <div className="flex-r items-center justify-center font-bold text-white" style={{width:40,height:40,borderRadius:12,background:'linear-gradient(135deg,#6366F1,#4F46E5)'}}>E</div>
+          <div className="flex-r items-center justify-center font-bold text-white" style={{width:36, height:36, borderRadius:10, background:'linear-gradient(135deg,#6366F1,#4F46E5)'}}>E</div>
           <div>
             <div className="text-sm font-semibold" style={{color:'white'}}>EasyVR</div>
-            <div style={{color:'#64748b',fontSize:10}}>Video Resizer</div>
+            <div style={{color:'#64748b', fontSize:10}}>Video Resizer</div>
           </div>
         </div>
         <div className="stack-4">
@@ -26,15 +27,16 @@ export default function Sidebar({ mode, onChange }: Props) {
             const active = mode === item.key;
             return (
               <div key={item.key} onClick={() => onChange(item.key)}
-                className="flex-r items-center gap-12 pad-x-12 pad-y-10 rounded-lg cursor-pointer text-sm"
+                className="flex-r items-center gap-12 pad-x-12 pad-y-10 cursor-pointer text-sm"
                 style={{
-                  border: active ? '1px solid rgba(79,70,229,0.3)' : '1px solid transparent',
-                  background: active ? 'rgba(79,70,229,0.1)' : 'transparent',
-                  color: active ? 'white' : '#94a3b8',
+                  borderRadius: 10,
+                  border: active ? '1px solid rgba(99,102,241,0.5)' : '1px solid transparent',
+                  background: active ? 'rgba(99,102,241,0.1)' : 'transparent',
+                  color: active ? 'white' : 'rgba(148,163,184,0.8)',
                   transition: 'all 0.2s'
                 }}
                 onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = 'white'; } }}
-                onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94a3b8'; } }}
+                onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(148,163,184,0.8)'; } }}
               >
                 {item.icon} <span>{item.label}</span>
               </div>
@@ -43,14 +45,14 @@ export default function Sidebar({ mode, onChange }: Props) {
         </div>
       </div>
       <div className="stack-4">
-        <div className="flex-r items-center gap-12 pad-x-12 pad-y-10 rounded-lg text-sm cursor-pointer" style={{color:'#94a3b8',border:'1px solid transparent',transition:'all 0.2s'}}
+        <div className="flex-r items-center gap-12 pad-x-12 pad-y-10 rounded-lg text-sm cursor-pointer" style={{color:'rgba(148,163,184,0.8)', border:'1px solid transparent', transition:'all 0.2s'}}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = 'white'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94a3b8'; }}>
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(148,163,184,0.8)'; }}>
           <Settings size={16} /> <span>Settings</span>
         </div>
-        <div className="flex-r items-center gap-12 pad-x-12 pad-y-10 rounded-lg text-sm cursor-pointer" style={{color:'#94a3b8',border:'1px solid transparent',transition:'all 0.2s'}}
+        <div className="flex-r items-center gap-12 pad-x-12 pad-y-10 rounded-lg text-sm cursor-pointer" style={{color:'rgba(148,163,184,0.8)', border:'1px solid transparent', transition:'all 0.2s'}}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = 'white'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94a3b8'; }}>
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(148,163,184,0.8)'; }}>
           <Info size={16} /> <span>About</span>
         </div>
       </div>
