@@ -301,110 +301,76 @@ $TabCRF.Add_MouseDown({ Select-Tab "crf" })
 $percentSlider.Add_ValueChanged({ $percentValue.Text = "$([int]$percentSlider.Value) %" })
 $crfSlider.Add_ValueChanged({ $crfValue.Text = "CRF $( [int]$crfSlider.Value )" })
 
-$global:ffJob = $null
 $global:ffDone = $false
 $global:totalFrames = 0
 $global:ffResult = @{ success = $false; error = ""; exitCode = -1 }
 $global:ffLogFile = $logFile
 $global:ffProgressFile = "$env:TEMP\easyvr_progress.txt" -replace '\\', '/'
-$script:ffmpegState = "idle"
-$script:ffCallback = $null
-$script:progressStarted = $false
+$global:lastPct = -1
 
 function Run-FFmpeg {
     param([array]$argsList, [scriptblock]$callback)
     Remove-Item $global:ffLogFile -Force -ErrorAction SilentlyContinue
     Remove-Item $global:ffProgressFile -Force -ErrorAction SilentlyContinue
-    Stop-Timer
     $global:ffResult = @{ success = $false; error = ""; exitCode = -1 }
     $global:ffDone = $false
-    $script:progressStarted = $false
-    $script:ffCallback = $callback
+    $global:lastPct = -1
     $global:totalFrames = [math]::Round($duration * ($origFps - 0.1))
-    $global:ffJob = Start-Job -ScriptBlock {
-        param($data)
-        try {
-            $p = Start-Process -FilePath $data.Exe -ArgumentList $data.Args -WindowStyle Hidden -Wait -PassThru -RedirectStandardError $data.LogPath
-            $p.ExitCode
-        } catch {
-            Write-Error $_.Exception.Message
-            -1001
-        }
-    } -ArgumentList (,[PSCustomObject]@{ Exe = $ffmpeg; Args = $argsList; LogPath = $global:ffLogFile })
-    Start-Timer
-}
 
-$pollTimer = New-Object System.Timers.Timer
-$pollTimer.Interval = 500
-$pollTimer.AutoReset = $true
-$pollTimer.Add_Elapsed({
-    $doFinish = $false
-    $doProgress = $false
-    $progressVal = 0
-    $pctStr = ""
-    $errorMsg = ""
-    $logLines = ""
+    $ps = [System.Management.Automation.PowerShell]::Create()
+    $ps.AddScript({
+        param($exe, $argsArr, $logPath)
+        & $exe @argsArr 2>$logPath
+        $LASTEXITCODE
+    }).AddParameters($ffmpeg, $argsList, $global:ffLogFile) | Out-Null
+    $asyncResult = $ps.BeginInvoke()
 
-    if ($global:ffDone) { return }
-    if (-not $global:ffJob) { return }
+    Write-Log "FFmpeg started"
 
-    if ($global:ffJob.State -ne "Running") {
-        $pollTimer.Enabled = $false
-        $exitCode = Receive-Job $global:ffJob -ErrorAction SilentlyContinue
-        Remove-Job $global:ffJob -Force -ErrorAction SilentlyContinue
-        $global:ffJob = $null
-        $global:ffDone = $true
-        $global:ffResult.exitCode = $exitCode
-        $global:ffResult.success = ($exitCode -eq 0)
-        $doFinish = $true
-        if (-not $global:ffResult.success) {
-            $global:ffResult.error = "FFmpeg exit code: $exitCode"
-            if (Test-Path $global:ffLogFile) { $logLines = Get-Content $global:ffLogFile -Tail 10 -ErrorAction SilentlyContinue }
-        }
-    } else {
+    while (-not $asyncResult.IsCompleted) {
+        Start-Sleep -Milliseconds 300
+        [System.Windows.Forms.Application]::DoEvents()
+
         if (Test-Path $global:ffProgressFile) {
-            try {
-                $lines = Get-Content $global:ffProgressFile -ErrorAction Stop
-                $f = 0
-                foreach ($line in $lines) {
-                    if ($line -match '^frame=(\d+)') { $f = [int]$matches[1]; $doProgress = $true }
-                    if ($line -match '^progress=' -and $f -gt 0) {
-                        $pct = [math]::Min(99, [math]::Round($f / [math]::Max(1, $global:totalFrames) * 100))
-                        if ($pct -ne $global:lastPct) { $progressVal = $pct; $pctStr = "$pct%"; $global:lastPct = $pct }
-                        $f = 0
+            $lines = Get-Content $global:ffProgressFile -ErrorAction SilentlyContinue -TotalCount 200
+            $f = 0
+            foreach ($line in $lines) {
+                if ($line -match '^frame=(\d+)') { $f = [int]$matches[1] }
+                if ($line -match '^progress=' -and $f -gt 0) {
+                    $pct = [math]::Min(99, [math]::Round($f / [math]::Max(1, $global:totalFrames) * 100))
+                    if ($pct -ne $global:lastPct) {
+                        $progressBar.Value = $pct
+                        $pctText.Text = "$pct%"
+                        $global:lastPct = $pct
                     }
+                    $f = 0
                 }
-            } catch {}
+            }
+        } elseif ($global:lastPct -eq -1) {
+            Write-Log "Progress file not ready yet..."
+            $global:lastPct = -2
         }
     }
 
-    $window.Dispatcher.Invoke([Action]{
-        if ($doFinish) {
-            if (-not $global:ffResult.success) {
-                $pctText.Text = "Error"
-                if ($logLines) { Write-Log ($logLines -join "`n") }
-            } else {
-                $pctText.Text = "100%"
-                $progressBar.Value = 100
-            }
-            if ($script:ffCallback) { & $script:ffCallback }
-        } elseif ($doProgress -and -not $script:progressWarned) {
-            $script:progressWarned = $true
-            Write-Log "Encoding started"
-        }
-        if ($progressVal -gt 0) {
-            $progressBar.Value = $progressVal
-            $pctText.Text = $pctStr
-        }
-        if (-not $global:ffDone -and -not $script:progressWarned) {
-            Write-Log "Waiting for FFmpeg..."
-            $script:progressWarned = $true
-        }
-    }, [System.Windows.Threading.DispatcherPriority]::Normal)
-})
+    $exitCode = $ps.EndInvoke($asyncResult)
+    $ps.Dispose()
 
-function Stop-Timer { $pollTimer.Enabled = $false }
-function Start-Timer { $global:lastPct = -1; $script:progressWarned = $false; $pollTimer.Enabled = $true }
+    $global:ffDone = $true
+    $global:ffResult.exitCode = $exitCode
+    $global:ffResult.success = ($exitCode -eq 0)
+    if (-not $global:ffResult.success) {
+        $global:ffResult.error = "FFmpeg exit code: $exitCode"
+        $pctText.Text = "Error"
+        if (Test-Path $global:ffLogFile) {
+            Write-Log ((Get-Content $global:ffLogFile -Tail 10) -join "`n")
+        }
+    } else {
+        $pctText.Text = "100%"
+        $progressBar.Value = 100
+    }
+
+    if ($callback) { & $callback }
+}
 
 $script:encodeState = $null  # { tag, ffArgs, audioTag, codecTag, fOut, fTmp, origSize, origMb, targetMb, bestBitrate, pass, maxPasses, adjusting }
 
