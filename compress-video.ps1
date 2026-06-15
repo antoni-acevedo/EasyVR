@@ -311,67 +311,51 @@ $global:lastPct = -1
 function Run-FFmpeg {
     param([array]$argsList, [scriptblock]$callback)
     Remove-Item $global:ffLogFile -Force -ErrorAction SilentlyContinue
-    Remove-Item $global:ffProgressFile -Force -ErrorAction SilentlyContinue
     $global:ffResult = @{ success = $false; error = ""; exitCode = -1 }
-    $global:ffDone = $false
     $global:lastPct = -1
     $global:totalFrames = [math]::Round($duration * ($origFps - 0.1))
 
-    $job = Start-Job -ScriptBlock {
-        param($data)
-        Set-Location $env:TEMP
-        $p = Start-Process -FilePath $data.Exe -ArgumentList $data.Args -WindowStyle Hidden -Wait -PassThru -RedirectStandardError $data.LogPath -RedirectStandardOutput $data.ProgressPath
-        $p.ExitCode
-    } -ArgumentList (,[PSCustomObject]@{
-        Exe = $ffmpeg
-        Args = $argsList
-        LogPath = $global:ffLogFile
-        ProgressPath = $global:ffProgressFile
-    })
+    $proc = New-Object System.Diagnostics.Process
+    $proc.StartInfo.FileName = $ffmpeg
+    $proc.StartInfo.Arguments = $argsList -join ' '
+    $proc.StartInfo.UseShellExecute = $false
+    $proc.StartInfo.CreateNoWindow = $true
+    $proc.StartInfo.RedirectStandardOutput = $true
+    $proc.StartInfo.RedirectStandardError = $true
+    $proc.StartInfo.StandardOutputEncoding = [System.Text.Encoding]::UTF8
 
-    Write-Log "Job started, monitoring progress..."
+    $script:lastFrame = 0
+    $script:logDone = $false
 
-    $frame = New-Object System.Windows.Threading.DispatcherFrame
-    $progressTimer = New-Object System.Windows.Threading.DispatcherTimer
-    $progressTimer.Interval = [TimeSpan]::FromMilliseconds(250)
-    $progressTimer.Add_Tick({
-        if ($job.State -ne "Running") {
-            $frame.Continue = $false
-            $progressTimer.Stop()
-            return
-        }
-        if (Test-Path $global:ffProgressFile) {
-            $lines = Get-Content $global:ffProgressFile -ErrorAction SilentlyContinue -TotalCount 200
-            $f = 0
-            foreach ($line in $lines) {
-                if ($line -match '^frame=(\d+)') { $f = [int]$matches[1] }
-                if ($line -match '^progress=' -and $f -gt 0) {
-                    $pct = [math]::Min(99, [math]::Round($f / [math]::Max(1, $global:totalFrames) * 100))
-                    if ($pct -ne $global:lastPct) {
-                        $progressBar.Value = $pct
-                        $pctText.Text = "$pct%"
-                        $global:lastPct = $pct
-                    }
-                    $f = 0
-                }
+    $proc.Add_OutputDataReceived({
+        $line = $_.Data
+        if (-not $line) { return }
+        if ($line -match '^frame=(\d+)') { $script:lastFrame = [int]$matches[1] }
+        if ($line -match '^progress=' -and $script:lastFrame -gt 0) {
+            $pct = [math]::Min(99, [math]::Round($script:lastFrame / [math]::Max(1, $global:totalFrames) * 100))
+            if ($pct -ne $global:lastPct) {
+                $global:lastPct = $pct
+                $window.Dispatcher.Invoke([Action]{ $progressBar.Value = $pct; $pctText.Text = "$pct%" }, [System.Windows.Threading.DispatcherPriority]::Send)
             }
+            $script:lastFrame = 0
         }
     })
-    $progressTimer.Start()
-    [System.Windows.Threading.Dispatcher]::PushFrame($frame)
 
-    $exitCode = Receive-Job $job -ErrorAction SilentlyContinue
-    Remove-Job $job -Force -ErrorAction SilentlyContinue
+    $proc.Start() | Out-Null
+    $proc.BeginOutputReadLine()
+    $stderr = $proc.StandardError.ReadToEnd()
+    [System.IO.File]::WriteAllText($global:ffLogFile, $stderr)
+    $proc.WaitForExit()
 
-    $global:ffDone = $true
+    $exitCode = $proc.ExitCode
+    $proc.Close()
+
     $global:ffResult.exitCode = $exitCode
     $global:ffResult.success = ($exitCode -eq 0)
     if (-not $global:ffResult.success) {
         $global:ffResult.error = "FFmpeg exit code: $exitCode"
         $pctText.Text = "Error"
-        if (Test-Path $global:ffLogFile) {
-            Write-Log ((Get-Content $global:ffLogFile -Tail 10) -join "`n")
-        }
+        Write-Log ((Get-Content $global:ffLogFile -Tail 10) -join "`n")
     } else {
         $pctText.Text = "100%"
         $progressBar.Value = 100
