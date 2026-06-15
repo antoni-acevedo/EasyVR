@@ -63,9 +63,6 @@ Source: "installer_launcher.bat"; DestDir: "{app}"; DestName: "launcher.bat"; Fl
 Source: "..\install.ps1"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\uninstall.ps1"; DestDir: "{app}"; Flags: ignoreversion
 
-; FFmpeg
-Source: "..\ffmpeg\*"; DestDir: "{app}\ffmpeg"; Flags: ignoreversion recursesubdirs
-
 ; Assets root
 Source: "..\EasyVR.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\logo.png"; DestDir: "{app}"; Flags: ignoreversion
@@ -74,7 +71,7 @@ Source: "..\logoSinTexto.png"; DestDir: "{app}"; Flags: ignoreversion
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\launcher.bat"; WorkingDir: "{app}\app"; IconFilename: "{app}\EasyVR.ico"
 Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\launcher.bat"; WorkingDir: "{app}\app"; IconFilename: "{app}\EasyVR.ico"; Tasks: desktopicon
+Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\launcher.bat"; WorkingDir: "{app}\app"; IconFilename: "{app}\EasyVR.ico"; Tasks: desktopicon
 
 [Run]
 ; Register context menu via install.ps1
