@@ -152,7 +152,7 @@ export default function App() {
   };
 
   return (
-    <div className="h-full flex flex-col p-6" style={{ background: 'var(--bg)' }}>
+    <div className="h-full flex flex-col p-6 bg-red-500">
       {/* Title bar */}
       <Header fileName={fileName} fileSize={fileSize} />
 
