@@ -325,14 +325,17 @@ function Run-FFmpeg {
     } -ArgumentList (,[PSCustomObject]@{ Exe = $ffmpeg; Args = $argsList; LogPath = $global:ffLogFile })
 
     Write-Log "Job started, monitoring progress..."
-    $startMsg = $false
 
-    while ($job.State -eq "Running") {
-        Start-Sleep -Milliseconds 200
-        [System.Windows.Forms.Application]::DoEvents()
-
+    $frame = New-Object System.Windows.Threading.DispatcherFrame
+    $progressTimer = New-Object System.Windows.Threading.DispatcherTimer
+    $progressTimer.Interval = [TimeSpan]::FromMilliseconds(250)
+    $progressTimer.Add_Tick({
+        if ($job.State -ne "Running") {
+            $frame.Continue = $false
+            $progressTimer.Stop()
+            return
+        }
         if (Test-Path $global:ffProgressFile) {
-            if (-not $startMsg) { Write-Log "Encoding started"; $startMsg = $true }
             $lines = Get-Content $global:ffProgressFile -ErrorAction SilentlyContinue -TotalCount 200
             $f = 0
             foreach ($line in $lines) {
@@ -348,7 +351,9 @@ function Run-FFmpeg {
                 }
             }
         }
-    }
+    })
+    $progressTimer.Start()
+    [System.Windows.Threading.Dispatcher]::PushFrame($frame)
 
     $exitCode = Receive-Job $job -ErrorAction SilentlyContinue
     Remove-Job $job -Force -ErrorAction SilentlyContinue
