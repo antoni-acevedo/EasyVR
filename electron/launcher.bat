@@ -1,3 +1,3 @@
 @echo off
 cd /d "%~dp0"
-node_modules\.bin\electron.cmd . "%1"
+"node_modules\electron\dist\electron.exe" . "%1"

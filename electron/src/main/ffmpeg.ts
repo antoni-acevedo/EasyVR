@@ -178,14 +178,24 @@ function runFFmpegProcess(
 ): Promise<{ exitCode: number; outputPath: string }> {
   return new Promise(async (resolve) => {
     const duration = await getDuration(opts.filePath);
+    if (duration <= 0) {
+      sendError(win, 'Could not read video duration. File may be corrupted.');
+      resolve({ exitCode: -1, outputPath: '' });
+      return;
+    }
     const origSize = getFileSize(opts.filePath);
     const outNameBase = path.basename(opts.filePath, path.extname(opts.filePath));
     let currentBitrate = 0;
 
+    // Calculate audio bitrate based on user selection
+    let audioBitrate = 128;
+    if (opts.audio === 'remove') audioBitrate = 0;
+    else if (opts.audio === 'keep') audioBitrate = 128; // conservative estimate for copy
+
     // Calculate initial bitrate
     if (opts.mode === 'fixed') {
       const totalBitrate = Math.round((opts.targetSize! * 8192) / duration);
-      currentBitrate = totalBitrate - 128;
+      currentBitrate = totalBitrate - audioBitrate;
       if (currentBitrate < 100) {
         sendError(win, `Size too small for video duration (${duration.toFixed(1)}s)`);
         resolve({ exitCode: -1, outputPath: '' });
@@ -194,7 +204,7 @@ function runFFmpegProcess(
     } else if (opts.mode === 'percent') {
       const targetSize = origSize * (opts.percent! / 100);
       const totalBitrate = Math.round((targetSize / (1024 * 1024) * 8192) / duration);
-      currentBitrate = Math.max(100, totalBitrate - 128);
+      currentBitrate = Math.max(100, totalBitrate - audioBitrate);
     }
 
     const maxPasses = opts.mode === 'fixed' ? opts.maxPasses : 1;
@@ -261,6 +271,11 @@ function runFFmpegProcess(
           if (adjResult.exitCode === 0) {
             try { fs.copyFileSync(tempOut, outputFile); } catch { }
             try { fs.unlinkSync(tempOut); } catch { }
+          } else {
+            try { fs.unlinkSync(tempOut); } catch { }
+            sendError(win, `Adjustment pass failed (exit: ${adjResult.exitCode})`);
+            resolve({ exitCode: adjResult.exitCode, outputPath: '' });
+            return;
           }
         }
       }
@@ -343,6 +358,12 @@ export async function compress(
   opts: FFmpegOptions,
 ): Promise<void> {
   findFFmpeg();
+
+  // Validate file path exists
+  if (!fs.existsSync(opts.filePath)) {
+    sendError(win, `File not found: ${opts.filePath}`);
+    return;
+  }
 
   try {
     const info = await getVideoInfo(opts.filePath);
