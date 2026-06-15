@@ -4,3 +4,4 @@ ffmpeg/
 electron/node_modules/
 electron/dist/
 electron/release/
+electron/installer/*.exe

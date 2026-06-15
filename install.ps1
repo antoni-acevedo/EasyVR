@@ -1,46 +1,52 @@
+param([string]$InstallPath = "")
+
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 # === FFmpeg ===
-$localDir = Join-Path $scriptDir "ffmpeg"
-$localExe = Join-Path $localDir "ffmpeg.exe"
-$pathExe = (Get-Command ffmpeg.exe -ErrorAction SilentlyContinue).Source
+if (-not $InstallPath) {
+    $localDir = Join-Path $scriptDir "ffmpeg"
+    $localExe = Join-Path $localDir "ffmpeg.exe"
+    $pathExe = (Get-Command ffmpeg.exe -ErrorAction SilentlyContinue).Source
 
-if ($pathExe) {
-    Write-Host "FFmpeg detected in PATH: $pathExe" -ForegroundColor Green
-    if (-not (Test-Path $localExe)) {
-        $ffBinDir = Split-Path -Parent $pathExe
+    if ($pathExe) {
+        Write-Host "FFmpeg detected in PATH: $pathExe" -ForegroundColor Green
+        if (-not (Test-Path $localExe)) {
+            $ffBinDir = Split-Path -Parent $pathExe
+            New-Item -ItemType Directory -Path $localDir -Force | Out-Null
+            Copy-Item "$ffBinDir\*" $localDir -Force
+            Write-Host "FFmpeg copied to local folder." -ForegroundColor Green
+        } else {
+            Write-Host "FFmpeg already local." -ForegroundColor Green
+        }
+    } elseif (-not (Test-Path $localExe)) {
+        Write-Host "Downloading FFmpeg..." -ForegroundColor Cyan
+        $url = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
+        $zip = Join-Path $env:TEMP "ffmpeg.zip"
+        try {
+            Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing -ErrorAction Stop
+        } catch {
+            Write-Host "Error downloading FFmpeg: $_" -ForegroundColor Red
+            Write-Host "Download manually from: $url" -ForegroundColor Yellow
+            Write-Host "Extract the 'bin' folder as '$localDir'" -ForegroundColor Yellow
+            exit 1
+        }
+
+        Write-Host "Extracting FFmpeg..." -ForegroundColor Cyan
+        $temp = Join-Path $env:TEMP "ffmpeg-extract"
+        if (Test-Path $temp) { Remove-Item $temp -Recurse -Force }
+        New-Item -ItemType Directory -Path $temp -Force | Out-Null
+        Expand-Archive -Path $zip -DestinationPath $temp -Force
+        $ffmpegZipDir = Get-ChildItem $temp -Directory | Select-Object -First 1
         New-Item -ItemType Directory -Path $localDir -Force | Out-Null
-        Copy-Item "$ffBinDir\*" $localDir -Force
-        Write-Host "FFmpeg copied to local folder." -ForegroundColor Green
+        Move-Item "$($ffmpegZipDir.FullName)\bin\*" $localDir -Force
+        Remove-Item $zip -Force
+        Remove-Item $temp -Recurse -Force
+        Write-Host "FFmpeg downloaded and extracted." -ForegroundColor Green
     } else {
         Write-Host "FFmpeg already local." -ForegroundColor Green
     }
-} elseif (-not (Test-Path $localExe)) {
-    Write-Host "Downloading FFmpeg..." -ForegroundColor Cyan
-    $url = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
-    $zip = Join-Path $env:TEMP "ffmpeg.zip"
-    try {
-        Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing -ErrorAction Stop
-    } catch {
-        Write-Host "Error downloading FFmpeg: $_" -ForegroundColor Red
-        Write-Host "Download manually from: $url" -ForegroundColor Yellow
-        Write-Host "Extract the 'bin' folder as '$localDir'" -ForegroundColor Yellow
-        exit 1
-    }
-
-    Write-Host "Extracting FFmpeg..." -ForegroundColor Cyan
-    $temp = Join-Path $env:TEMP "ffmpeg-extract"
-    if (Test-Path $temp) { Remove-Item $temp -Recurse -Force }
-    New-Item -ItemType Directory -Path $temp -Force | Out-Null
-    Expand-Archive -Path $zip -DestinationPath $temp -Force
-    $ffmpegZipDir = Get-ChildItem $temp -Directory | Select-Object -First 1
-    New-Item -ItemType Directory -Path $localDir -Force | Out-Null
-    Move-Item "$($ffmpegZipDir.FullName)\bin\*" $localDir -Force
-    Remove-Item $zip -Force
-    Remove-Item $temp -Recurse -Force
-    Write-Host "FFmpeg downloaded and extracted." -ForegroundColor Green
 } else {
-    Write-Host "FFmpeg already local." -ForegroundColor Green
+    Write-Host "FFmpeg bundled with installer." -ForegroundColor Green
 }
 
 # === Context menu (HKCU - no admin required) ===
@@ -50,9 +56,16 @@ foreach ($old in $oldKeys) {
     Remove-Item -LiteralPath $old.PSPath -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-$scriptPath = Join-Path $scriptDir "electron\launcher.bat"
+if ($InstallPath) {
+    $scriptPath = Join-Path $InstallPath "launcher.bat"
+    $icon = Join-Path $InstallPath "EasyVR.ico"
+    $ffmpegDir = Join-Path $InstallPath "ffmpeg"
+} else {
+    $scriptPath = Join-Path $scriptDir "electron\launcher.bat"
+    $icon = Join-Path $scriptDir "EasyVR.ico"
+    $ffmpegDir = Join-Path $scriptDir "ffmpeg"
+}
 $cmd = "`"$scriptPath`" `"%1`""
-$icon = [System.IO.Path]::Combine($scriptDir, "EasyVR.ico")
 
 function Add-MenuItem {
     param([string]$RegKey)
