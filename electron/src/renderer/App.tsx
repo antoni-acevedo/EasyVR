@@ -66,18 +66,18 @@ export default function App() {
       <Sidebar mode={mode} onChange={setMode} />
       <div className="flex-1 flex-c pad-6 overflow-hidden" style={{padding:6}}>
         <Header fileName={fileName} />
-        <div className="flex-1 flex-c overflow-hidden pad-8" style={{background:'rgba(25,35,55,0.2)', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)', border:'1px solid rgba(30,41,59,0.5)', borderRadius:16}}>
+        <div className="flex-1 flex-c overflow-hidden pad-8" style={{background:'var(--bg-card)', border:'1px solid rgba(255,255,255,0.05)', borderRadius:16, boxShadow:'0 8px 24px rgba(0,0,0,0.2)'}}>
           <div className="flex-1 overflow-y-auto">
             <div className="mar-b-12">
-              <div className="fluent-label mar-b-6">Target Size</div>
+              <div className="fluent-label">Target Size</div>
               {mode === 'fixed' && <FixedSizeInput value={targetSize} onChange={setTargetSize} />}
               {mode === 'percent' && <PercentInput value={percent} onChange={setPercent} />}
               {mode === 'crf' && <CRFInput value={crf} onChange={setCrf} />}
             </div>
             <AdvancedOptions resolution={resolution} onResolutionChange={setResolution} fps={fps} onFpsChange={setFps} codec={codec} onCodecChange={setCodec} preset={preset} onPresetChange={setPreset} audio={audio} onAudioChange={setAudio} format={format} onFormatChange={setFormat} origRes={origRes} origFps={origFps} />
-            <button className="w-full flex-r items-center justify-center gap-8 mar-t-16 pad-y-10 rounded-lg tracking-wide text-xs font-semibold" style={{background:'#2563EB', color:'white', border:'none', cursor:'pointer', transition:'background 0.2s'}} onClick={handleCompress} disabled={isEncoding || !filePath}
-              onMouseEnter={e=>{if(!e.currentTarget.disabled)e.currentTarget.style.background='#3B82F6'}}
-              onMouseLeave={e=>{if(!e.currentTarget.disabled)e.currentTarget.style.background='#2563EB'}}>
+            <button className="w-full flex-r items-center justify-center gap-8 mar-t-16 pad-y-10 rounded-lg tracking-wide text-xs font-semibold" style={{background:'#4CC2F1', color:'#13161C', border:'none', cursor:'pointer', transition:'background 0.2s', boxShadow:'0 1px 3px rgba(0,0,0,0.15)'}} onClick={handleCompress} disabled={isEncoding || !filePath}
+              onMouseEnter={e=>{if(!e.currentTarget.disabled)e.currentTarget.style.background='#3FAEDC'}}
+              onMouseLeave={e=>{if(!e.currentTarget.disabled)e.currentTarget.style.background='#4CC2F1'}}>
               <Zap size={16} /> {isEncoding ? 'COMPRESSING...' : 'COMPRESS VIDEO'}
             </button>
             <div className="mar-t-16">

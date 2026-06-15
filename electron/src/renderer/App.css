@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --bg-app: #090D16;
-  --bg-panel: #0F1322;
-  --bg-input: rgba(99,102,241,0.06);
-  --bg-terminal: rgba(99,102,241,0.04);
-  --accent: #4F46E5;
-  --accent-hover: #6366F1;
-  --btn-primary: #1E3BB3;
-  --btn-primary-hover: #2546C1;
+  --bg-app: #181B22;
+  --bg-panel: #181B22;
+  --bg-card: #20242E;
+  --bg-input: #13161C;
+  --bg-terminal: #13161C;
+  --accent: #4CC2F1;
+  --accent-hover: #3FAEDC;
   --text-primary: #FFFFFF;
-  --text-secondary: #FFFFFF;
-  --border-color: #1E293B;
-  --border-accent: #4F46E5;
+  --text-secondary: #8A96A8;
+  --text-muted: #717D8E;
+  --border-color: rgba(255,255,255,0.08);
+  --border-subtle: rgba(255,255,255,0.05);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -21,11 +21,8 @@ html, body, #root {
   height: 100%;
   overflow: hidden;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-  background: url('./bg.png') center/cover no-repeat, rgba(9, 13, 22, 0.55);
-  background-blend-mode: overlay;
-  backdrop-filter: blur(40px) saturate(1.5);
-  -webkit-backdrop-filter: blur(40px) saturate(1.5);
-  color: #FFFFFF;
+  background: var(--bg-app);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -61,19 +58,19 @@ html, body, #root {
   overflow-y: auto;
   font-family: 'Cascadia Code', 'Consolas', monospace;
   font-size: 10px;
-  color: #FFFFFF;
+  color: var(--text-secondary);
   line-height: 1.5;
-  border: 1px solid rgba(30,41,59,0.5);
+  border: 1px solid var(--border-subtle);
 }
 /* Modern thin scrollbar - global */
 ::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.2); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.4); }
+::-webkit-scrollbar-thumb { background: rgba(138,150,168,0.15); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(138,150,168,0.3); }
 
 .console-box::-webkit-scrollbar { width: 3px; }
 .console-box::-webkit-scrollbar-track { background: transparent; }
-.console-box::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.15); border-radius: 4px; }
+.console-box::-webkit-scrollbar-thumb { background: rgba(138,150,168,0.1); border-radius: 4px; }
 
 input[type="range"] {
   -webkit-appearance: none;
@@ -134,9 +131,9 @@ input[type="range"]::-webkit-slider-thumb {
 
 .fluent-select {
   background: var(--bg-input);
-  border: 1px solid rgba(99,102,241,0.25);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  color: #FFFFFF;
+  color: var(--text-secondary);
   font-size: 13px;
   padding: 10px 14px;
   outline: none;
@@ -146,10 +143,9 @@ input[type="range"]::-webkit-slider-thumb {
 .fluent-select:focus { border-color: var(--accent); }
 
 .fluent-label {
-  font-size: 10px;
-  letter-spacing: 0.1em;
+  font-size: 11px;
+  font-weight: 500;
   color: var(--text-secondary);
-  text-transform: uppercase;
   margin-bottom: 6px;
 }
 
