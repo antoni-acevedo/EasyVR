@@ -62,7 +62,7 @@ ipcMain.on('window-maximize', () => {
 });
 ipcMain.on('window-close', () => mainWindow?.close());
 
-// Get file path from command line arg %1
+// Get file path from command line arg %1 (argv[0]=electron, argv[1]=".", argv[2]=path)
 ipcMain.handle('get-file-path', () => {
   return process.argv[2] || '';
 });
