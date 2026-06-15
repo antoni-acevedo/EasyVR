@@ -64,23 +64,23 @@ export default function App() {
   return (
     <div className="w-screen h-screen flex-r overflow-hidden font-sans select-none" style={{color:'white'}}>
       <Sidebar mode={mode} onChange={setMode} />
-      <div className="flex-1 flex-c pad-16 pad-l-8 overflow-hidden" style={{paddingBottom:16, paddingRight:16, paddingTop:16, paddingLeft:8}}>
+      <div className="flex-1 flex-c pad-6 overflow-hidden" style={{padding:6}}>
         <Header fileName={fileName} />
-        <div className="flex-1 flex-c overflow-hidden pad-24" style={{background:'rgba(11,15,25,0.6)', backdropFilter:'blur(16px)', WebkitBackdropFilter:'blur(16px)', border:'1px solid rgba(30,41,59,0.5)', borderRadius:16}}>
+        <div className="flex-1 flex-c overflow-hidden pad-8" style={{background:'rgba(25,35,55,0.2)', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)', border:'1px solid rgba(30,41,59,0.5)', borderRadius:16}}>
           <div className="flex-1 overflow-y-auto">
-            <div className="mar-b-16">
-              <div className="fluent-label mar-b-8">Target Size</div>
+            <div className="mar-b-12">
+              <div className="fluent-label mar-b-6">Target Size</div>
               {mode === 'fixed' && <FixedSizeInput value={targetSize} onChange={setTargetSize} />}
               {mode === 'percent' && <PercentInput value={percent} onChange={setPercent} />}
               {mode === 'crf' && <CRFInput value={crf} onChange={setCrf} />}
             </div>
             <AdvancedOptions resolution={resolution} onResolutionChange={setResolution} fps={fps} onFpsChange={setFps} codec={codec} onCodecChange={setCodec} preset={preset} onPresetChange={setPreset} audio={audio} onAudioChange={setAudio} format={format} onFormatChange={setFormat} origRes={origRes} origFps={origFps} />
-            <button className="w-full flex-r items-center justify-center gap-8 mar-t-24 pad-y-12 rounded-lg tracking-wide text-xs font-semibold" style={{background:'#1F3A8A', color:'white', border:'none', cursor:'pointer', transition:'background 0.2s'}} onClick={handleCompress} disabled={isEncoding || !filePath}
-              onMouseEnter={e=>{if(!e.currentTarget.disabled)e.currentTarget.style.background='#2548B3'}}
-              onMouseLeave={e=>{if(!e.currentTarget.disabled)e.currentTarget.style.background='#1F3A8A'}}>
+            <button className="w-full flex-r items-center justify-center gap-8 mar-t-16 pad-y-10 rounded-lg tracking-wide text-xs font-semibold" style={{background:'#2563EB', color:'white', border:'none', cursor:'pointer', transition:'background 0.2s'}} onClick={handleCompress} disabled={isEncoding || !filePath}
+              onMouseEnter={e=>{if(!e.currentTarget.disabled)e.currentTarget.style.background='#3B82F6'}}
+              onMouseLeave={e=>{if(!e.currentTarget.disabled)e.currentTarget.style.background='#2563EB'}}>
               <Zap size={16} /> {isEncoding ? 'COMPRESSING...' : 'COMPRESS VIDEO'}
             </button>
-            <div className="mar-t-24">
+            <div className="mar-t-16">
               {(isEncoding||showResult) && <ProgressPanel progress={progress} statusText={statusText} logs={logs} logsRef={logsRef as React.RefObject<HTMLDivElement>} result={showResult} onCloseResult={()=>setShowResult(null)} />}
               <DevConsole open={devConsoleOpen} onToggle={()=>setDevConsoleOpen(!devConsoleOpen)} entries={rawEntries} onClear={()=>setRawEntries([])} onCopy={()=>navigator.clipboard.writeText(rawEntries.map(e=>`${e.type}: ${e.line}`).join('\n'))} />
             </div>

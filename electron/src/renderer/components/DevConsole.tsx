@@ -26,9 +26,9 @@ export default function DevConsole({ open, onToggle, entries, onClear, onCopy }:
             <button onClick={onCopy} style={{background:'#1e293b',color:'#94a3b8',border:'none',borderRadius:4,padding:'4px 12px',fontSize:10,cursor:'pointer'}}>Copy All</button>
           </div>
           <div ref={ref} className="w-full font-mono text-xs overflow-y-auto pad-12 mar-t-12" style={{
-            height: 280,
-            background: '#05070D',
-            border: '1px solid #0f1729',
+            height: 140,
+            background: 'rgba(99,102,241,0.04)',
+            border: '1px solid rgba(99,102,241,0.12)',
             borderRadius: 12,
             color: '#FFFFFF',
             boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)',

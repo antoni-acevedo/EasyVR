@@ -9,8 +9,8 @@ const isDev = !fs.existsSync(path.join(__dirname, '../renderer/index.html'));
 
 function createWindow(): void {
     mainWindow = new BrowserWindow({
-    width: 820,
-    height: 620,
+    width: 480,
+    height: 360,
     frame: false,
     transparent: true,
     backgroundColor: '#00000000',
