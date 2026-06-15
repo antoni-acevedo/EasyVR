@@ -11,41 +11,37 @@ interface Props {
 
 export default function ProgressPanel({ progress, statusText, logs, logsRef, result, onCloseResult }: Props) {
   return (
-    <div className="mt-4">
+    <div className="mb-4">
       {/* Progress bar */}
-      <div className="h-[6px] rounded overflow-hidden bg-[#E8E8E8]">
-        <div className="h-full rounded transition-all duration-300" style={{ width: `${progress}%`, background: 'var(--accent)' }} />
+      <div className="h-1.5 rounded-full overflow-hidden bg-slate-800">
+        <div className="h-full rounded-full transition-all duration-300" style={{ width: `${progress}%`, background: 'var(--accent)' }} />
+      </div>
+      <div className="flex justify-between mt-2">
+        <span className="text-xs text-slate-400">{statusText}</span>
+        <span className="text-xs font-semibold text-indigo-400">{progress}%</span>
       </div>
 
-      {/* Status text */}
-      <div className="flex justify-between mt-[6px]">
-        <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{statusText}</span>
-        <span className="text-xs font-semibold" style={{ color: 'var(--accent)' }}>{progress}%</span>
-      </div>
-
-      {/* Console log */}
       {logs.length > 0 && (
-        <div ref={logsRef} className="console-box mt-2">
+        <div ref={logsRef} className="console-box mt-3" style={{ maxHeight: 120 }}>
           {logs.map((line, i) => <div key={i}>{line}</div>)}
         </div>
       )}
 
-      {/* Result dialog */}
       {result && (
-        <div className={`rounded-lg p-3 mt-3 ${result.success ? 'bg-green-50' : 'bg-red-50'}`}>
+        <div className={`rounded-lg p-4 mt-3 ${result.success ? 'bg-emerald-900/20 border border-emerald-800/30' : 'bg-red-900/20 border border-red-800/30'}`}>
           {result.success ? (
             <div>
-              <div className="text-sm font-semibold text-green-700 mb-1">✓ Video compressed successfully</div>
-              <div className="text-xs text-[#555]">
+              <div className="text-sm font-semibold text-emerald-400 mb-1">✓ Video compressed</div>
+              <div className="text-xs text-slate-400 space-y-0.5">
                 <div>Original: {result.origMb} MB</div>
                 <div>Compressed: {result.newMb} MB</div>
                 <div>Saved: {result.saved} MB</div>
-                <div className="text-[11px] mt-[2px]" style={{ color: 'var(--text-light)' }}>{result.outputName}</div>
+                <div className="text-slate-500 mt-1">{result.outputName}</div>
               </div>
-              <button onClick={onCloseResult} className="mt-2 bg-[var(--accent)] text-white border-none rounded px-4 py-1 text-xs font-semibold cursor-pointer">OK</button>
+              <button onClick={onCloseResult} className="mt-3 bg-indigo-600 hover:bg-indigo-500 text-white border-none rounded-lg px-4 py-1.5 text-xs font-semibold cursor-pointer transition-colors">OK</button>
             </div>
           ) : (
-            <div className="text-sm font-semibold text-red-700">✕ Compression failed</div>
+            <div className="text-sm font-semibold text-red-400">✕ Compression failed</div>
           )}
         </div>
       )}

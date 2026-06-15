@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Zap, ChevronDown } from 'lucide-react';
+import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-import ModeSelector from './components/ModeSelector';
 import FixedSizeInput from './components/FixedSizeInput';
 import PercentInput from './components/PercentInput';
 import CRFInput from './components/CRFInput';
@@ -12,6 +13,7 @@ type Mode = 'fixed' | 'percent' | 'crf';
 
 interface FFmpegOptions {
   mode: Mode;
+  filePath: string;
   targetSize?: number;
   percent?: number;
   crf?: number;
@@ -27,8 +29,6 @@ interface FFmpegOptions {
 export default function App() {
   const [filePath, setFilePath] = useState('');
   const [fileName, setFileName] = useState('');
-  const [fileSize, setFileSize] = useState(0);
-  const [duration, setDuration] = useState(0);
   const [origRes, setOrigRes] = useState('');
   const [origFps, setOrigFps] = useState(0);
 
@@ -57,12 +57,10 @@ export default function App() {
 
   const logsRef = useRef<HTMLDivElement>(null);
 
-  // Scroll logs
   useEffect(() => {
     if (logsRef.current) logsRef.current.scrollTop = logsRef.current.scrollHeight;
   }, [logs]);
 
-  // Init: get file path and info
   useEffect(() => {
     (async () => {
       const fp = await window.electronAPI.getFilePath();
@@ -73,7 +71,6 @@ export default function App() {
     })();
   }, []);
 
-  // IPC listeners
   const addLog = useCallback((msg: string) => {
     setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
   }, []);
@@ -83,14 +80,9 @@ export default function App() {
       setProgress(data.percent);
       setStatusText(`Encoding... ${data.frame}/${data.totalFrames} frames (${data.percent}%)`);
     });
-
-    window.electronAPI.onLog((msg) => {
-      addLog(msg);
-    });
-
+    window.electronAPI.onLog((msg) => addLog(msg));
     window.electronAPI.onDone((data) => {
-      setProgress(100);
-      setIsEncoding(false);
+      setProgress(100); setIsEncoding(false);
       setShowResult({
         success: true,
         origMb: (data.originalSize / (1024 * 1024)).toFixed(1),
@@ -100,116 +92,90 @@ export default function App() {
       });
       setStatusText('Complete!');
     });
-
-    window.electronAPI.onError((msg) => {
-      setIsEncoding(false);
-      setStatusText('Error');
-      addLog(`ERROR: ${msg}`);
-    });
-
-    window.electronAPI.onRaw((data) => {
-      setRawEntries(prev => [...prev, data]);
-    });
-
+    window.electronAPI.onError((msg) => { setIsEncoding(false); setStatusText('Error'); addLog(`ERROR: ${msg}`); });
+    window.electronAPI.onRaw((data) => setRawEntries(prev => [...prev, data]));
     return () => { window.electronAPI.removeAllListeners(); };
   }, [addLog]);
 
   const handleCompress = () => {
     if (!filePath) return;
-
-    setIsEncoding(true);
-    setProgress(0);
-    setStatusText('Starting...');
-    setLogs([]);
-    setRawEntries([]);
-    setShowResult(null);
-    setDevConsoleOpen(true);
-
+    setIsEncoding(true); setProgress(0); setStatusText('Starting...');
+    setLogs([]); setRawEntries([]); setShowResult(null); setDevConsoleOpen(true);
     const opts: FFmpegOptions = {
-      filePath,
-      mode,
-      resolution,
-      fps,
-      codec,
-      preset,
-      audio,
-      format,
-      maxPasses: 2,
+      filePath, mode, resolution, fps, codec, preset, audio, format, maxPasses: 2,
     };
-
     if (mode === 'fixed') {
       const mb = parseFloat(targetSize);
       if (isNaN(mb) || mb <= 0) { setStatusText('Error: enter a valid size'); setIsEncoding(false); return; }
       opts.targetSize = mb;
-    } else if (mode === 'percent') {
-      opts.percent = percent;
-    } else {
-      opts.crf = crf;
-    }
-
+    } else if (mode === 'percent') { opts.percent = percent; }
+    else { opts.crf = crf; }
     addLog(`Starting: ${fileName}, mode: ${mode}`);
     window.electronAPI.startCompression(opts);
   };
 
   return (
-    <div className="h-full flex flex-col p-6 bg-red-500">
-      {/* Title bar */}
-      <Header fileName={fileName} fileSize={fileSize} />
+    <div className="h-full flex" style={{ background: 'var(--bg-app)' }}>
+      <Sidebar mode={mode} onChange={setMode} />
 
-      {/* Main content */}
-      <div className="flex-1 overflow-y-auto pt-4">
-        {/* Mode */}
-        <ModeSelector mode={mode} onChange={setMode} />
+      <div className="flex-1 flex flex-col p-6 overflow-hidden">
+        <Header fileName={fileName} />
 
-        {/* Mode-specific inputs */}
-        {mode === 'fixed' && <FixedSizeInput value={targetSize} onChange={setTargetSize} />}
-        {mode === 'percent' && <PercentInput value={percent} onChange={setPercent} />}
-        {mode === 'crf' && <CRFInput value={crf} onChange={setCrf} />}
+        <div className="flex-1 overflow-y-auto rounded-xl border border-slate-800/80 p-6"
+             style={{ background: 'rgba(11,15,25,0.9)' }}>
+          {/* TARGET SIZE */}
+          <div className="mb-6">
+            <div className="fluent-label">Target Size</div>
+            {mode === 'fixed' && <FixedSizeInput value={targetSize} onChange={setTargetSize} />}
+            {mode === 'percent' && <PercentInput value={percent} onChange={setPercent} />}
+            {mode === 'crf' && <CRFInput value={crf} onChange={setCrf} />}
+          </div>
 
-        {/* Advanced */}
-        <AdvancedOptions
-          resolution={resolution} onResolutionChange={setResolution}
-          fps={fps} onFpsChange={setFps}
-          codec={codec} onCodecChange={setCodec}
-          preset={preset} onPresetChange={setPreset}
-          audio={audio} onAudioChange={setAudio}
-          format={format} onFormatChange={setFormat}
-          origRes={origRes} origFps={origFps}
-        />
-
-        {/* Compress button */}
-        <button
-          className="btn-primary w-full mt-4"
-          onClick={handleCompress}
-          disabled={isEncoding || !filePath}
-        >
-          {isEncoding ? 'COMPRESSING...' : 'COMPRESS VIDEO'}
-        </button>
-        {/* Scrollable bottom area */}
-        <div style={{ maxHeight: 320, overflowY: 'auto', marginTop: 4 }}>
-          {/* Progress */}
-          {(isEncoding || showResult) && (
-            <ProgressPanel
-              progress={progress}
-              statusText={statusText}
-              logs={logs}
-              logsRef={logsRef as React.RefObject<HTMLDivElement>}
-              result={showResult}
-              onCloseResult={() => setShowResult(null)}
-            />
-          )}
-
-          {/* DevConsole */}
-          <DevConsole
-            open={devConsoleOpen}
-            onToggle={() => setDevConsoleOpen(!devConsoleOpen)}
-            entries={rawEntries}
-            onClear={() => setRawEntries([])}
-            onCopy={() => {
-              const text = rawEntries.map(e => `${e.type}: ${e.line}`).join('\n');
-              navigator.clipboard.writeText(text);
-            }}
+          {/* ADVANCED */}
+          <AdvancedOptions
+            resolution={resolution} onResolutionChange={setResolution}
+            fps={fps} onFpsChange={setFps}
+            codec={codec} onCodecChange={setCodec}
+            preset={preset} onPresetChange={setPreset}
+            audio={audio} onAudioChange={setAudio}
+            format={format} onFormatChange={setFormat}
+            origRes={origRes} origFps={origFps}
           />
+
+          {/* COMPRESS BUTTON */}
+          <button
+            className="btn-primary w-full mt-6"
+            onClick={handleCompress}
+            disabled={isEncoding || !filePath}
+          >
+            <Zap size={16} />
+            {isEncoding ? 'COMPRESSING...' : 'COMPRESS VIDEO'}
+          </button>
+
+          {/* Progress + DevConsole */}
+          <div className="mt-6">
+            {(isEncoding || showResult) && (
+              <ProgressPanel
+                progress={progress}
+                statusText={statusText}
+                logs={logs}
+                logsRef={logsRef as React.RefObject<HTMLDivElement>}
+                result={showResult}
+                onCloseResult={() => setShowResult(null)}
+              />
+            )}
+
+            <DevConsole
+              open={devConsoleOpen}
+              onToggle={() => setDevConsoleOpen(!devConsoleOpen)}
+              entries={rawEntries}
+              onClear={() => setRawEntries([])}
+              onCopy={() => {
+                const text = rawEntries.map(e => `${e.type}: ${e.line}`).join('\n');
+                navigator.clipboard.writeText(text);
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>

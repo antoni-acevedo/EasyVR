@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+import { ChevronDown } from 'lucide-react';
 
 interface RawEntry {
   type: 'cmd' | 'stdout' | 'stderr';
@@ -13,7 +14,7 @@ interface Props {
   onCopy: () => void;
 }
 
-const btnStyle = "bg-gray-700 text-gray-300 border-none rounded px-[10px] py-[2px] text-[10px] cursor-pointer hover:bg-gray-600";
+const btnStyle = "bg-slate-800 hover:bg-slate-700 text-slate-300 border-none rounded px-3 py-1 text-[10px] cursor-pointer transition-colors";
 
 export default function DevConsole({ open, onToggle, entries, onClear, onCopy }: Props) {
   const ref = useRef<HTMLDivElement>(null);
@@ -27,34 +28,31 @@ export default function DevConsole({ open, onToggle, entries, onClear, onCopy }:
   }, [entries]);
 
   const lineColor = (type: string, line: string): string => {
-    if (type === 'cmd') return '#4FC3F7';
-    if (type === 'stdout') return '#AAA';
-    if (type === 'stderr' && /error/i.test(line)) return '#EF5350';
-    if (type === 'stderr') return '#FFB74D';
-    return '#AAA';
+    if (type === 'cmd') return '#60A5FA';
+    if (type === 'stdout') return '#94A3B8';
+    if (type === 'stderr' && /error/i.test(line)) return '#F87171';
+    if (type === 'stderr') return '#FBBF24';
+    return '#94A3B8';
   };
 
   const prefixMap: Record<string, string> = { cmd: '$', stdout: '>', stderr: '!' };
 
   return (
-    <div className="mt-2">
-      <button
-        onClick={onToggle}
-        className="bg-none border-none cursor-pointer text-[11px] font-semibold flex items-center gap-1 p-0"
-        style={{ color: 'var(--text-secondary)' }}
-      >
-        {open ? '▼' : '▶'} DEVCONSOLE ({entries.length} lines)
-      </button>
+    <div>
+      <div className="flex items-center justify-between py-3 cursor-pointer select-none" onClick={onToggle}>
+        <span className="text-[11px] tracking-wider text-slate-400 uppercase">DevConsole ({entries.length} lines)</span>
+        <ChevronDown size={14} className={`text-slate-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </div>
 
       {open && (
-        <div className="mt-[6px]">
-          <div className="flex gap-1 mb-[4px]">
+        <div>
+          <div className="flex gap-2 mb-2">
             <button onClick={onClear} className={btnStyle}>Clear</button>
             <button onClick={onCopy} className={btnStyle}>Copy All</button>
           </div>
           <div ref={ref} className="console-box" style={{ maxHeight: 200 }}>
             {entries.length === 0 && (
-              <div className="text-[#666] italic">No output yet</div>
+              <div className="text-slate-600 italic">No output yet</div>
             )}
             {entries.map((e, i) => (
               <div key={i} style={{ color: lineColor(e.type, e.line) }}>

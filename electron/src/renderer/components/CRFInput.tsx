@@ -4,14 +4,15 @@ interface Props { value: number; onChange: (v: number) => void; }
 
 export default function CRFInput({ value, onChange }: Props) {
   return (
-    <div className="mb-1">
-      <label className="text-[11px] font-semibold block mb-[2px]" style={{ color: 'var(--text-secondary)' }}>QUALITY (CRF)</label>
-      <span className="text-[10px] block mb-[4px]" style={{ color: 'var(--text-light)' }}>18 = best quality / 28 = smallest file</span>
-      <input type="range" min={18} max={28} step={1} value={value} onChange={(e) => onChange(parseInt(e.target.value))} className="w-full accent-[var(--accent)]" />
-      <div className="flex justify-between mt-[2px]">
-        <span className="text-[11px]" style={{ color: 'var(--text-light)' }}>Best</span>
-        <span className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>CRF {value}</span>
-        <span className="text-[11px]" style={{ color: 'var(--text-light)' }}>Smaller</span>
+    <div>
+      <div className="text-[11px] text-slate-500 mb-2">18 = best / 28 = smallest</div>
+      <input type="range" min={18} max={28} step={1} value={value}
+        onChange={(e) => onChange(parseInt(e.target.value))}
+        className="w-full" />
+      <div className="flex justify-between mt-1">
+        <span className="text-[11px] text-slate-500">Best</span>
+        <span className="text-sm font-semibold text-indigo-400">CRF {value}</span>
+        <span className="text-[11px] text-slate-500">Smaller</span>
       </div>
     </div>
   );
