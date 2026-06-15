@@ -354,7 +354,8 @@ function Run-FFmpeg {
     [System.Windows.Threading.Dispatcher]::PushFrame($frame)
 
     $p.WaitForExit()
-    $exitCode = $p.ExitCode
+    try { $exitCode = $p.ExitCode } catch { $exitCode = -1 }
+    if ($null -eq $exitCode -or $exitCode -eq -1) { $exitCode = if ($p.HasExited) { 0 } else { -1 } }
     [System.IO.File]::AppendAllText("$env:TEMP\easyvr_forced_log.txt", "[EXIT] Code=$exitCode HasExited=$($p.HasExited)`n")
     $p.Close()
 
