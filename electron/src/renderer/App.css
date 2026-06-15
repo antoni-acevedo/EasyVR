@@ -10,7 +10,7 @@
   --btn-primary: #1E3BB3;
   --btn-primary-hover: #2546C1;
   --text-primary: #FFFFFF;
-  --text-secondary: #94A3B8;
+  --text-secondary: #FFFFFF;
   --border-color: #1E293B;
   --border-accent: #4F46E5;
 }
@@ -61,7 +61,7 @@ html, body, #root {
   overflow-y: auto;
   font-family: 'Cascadia Code', 'Consolas', monospace;
   font-size: 10px;
-  color: #CDD6F4;
+  color: #FFFFFF;
   line-height: 1.5;
   border: 1px solid rgba(30,41,59,0.5);
 }

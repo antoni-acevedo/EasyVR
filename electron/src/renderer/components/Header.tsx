@@ -15,7 +15,7 @@ export default function Header({ fileName }: Props) {
           onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color='#FFFFFF'}}>
           <Minus size={14} strokeWidth={2.5} />
         </button>
-        <button onClick={()=>window.electronAPI.maximize()} className="flex-r items-center justify-center" style={{width:36,height:28,borderRadius:6,border:'none',background:'transparent',cursor:'pointer',color:'#475569',transition:'all 0.15s',opacity:0.4}}
+        <button onClick={()=>window.electronAPI.maximize()} className="flex-r items-center justify-center" style={{width:36,height:28,borderRadius:6,border:'none',background:'transparent',cursor:'pointer',color:'#FFFFFF',transition:'all 0.15s',opacity:0.4}}
           title="Maximize disabled for transparent window">
           <Square size={12} strokeWidth={2.5} />
         </button>

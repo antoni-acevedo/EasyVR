@@ -9,7 +9,7 @@ export default function DevConsole({ open, onToggle, entries, onClear, onCopy }:
 
   useEffect(() => { if (ref.current) requestAnimationFrame(() => { if (ref.current) ref.current.scrollTop = ref.current.scrollHeight; }); }, [entries]);
 
-  const lineColor = (type: string, line: string) => type==='cmd'?'#60A5FA':type==='stdout'?'#94A3B8':type==='stderr'&&/error/i.test(line)?'#F87171':type==='stderr'?'#FBBF24':'#94A3B8';
+  const lineColor = (type: string, line: string) => type==='cmd'?'#60A5FA':type==='stdout'?'#FFFFFF':type==='stderr'&&/error/i.test(line)?'#F87171':type==='stderr'?'#FBBF24':'#FFFFFF';
   const prefixMap: Record<string,string> = {cmd:'$',stdout:'>',stderr:'!'};
 
   return (
