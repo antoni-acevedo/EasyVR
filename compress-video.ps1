@@ -224,7 +224,7 @@ $xaml = @"
                     <TextBlock Grid.Column="1" x:Name="PctText" Text="0%" FontSize="12" FontWeight="SemiBold" Foreground="#6C5CE7"/>
                 </Grid>
                 <Border Background="#1E1E2E" CornerRadius="6" Padding="8" Margin="0,8,0,0" MaxHeight="120">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                    <ScrollViewer x:Name="ConsoleScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                         <TextBlock x:Name="ConsoleLog" Text="" FontFamily="Cascadia Code, Consolas" FontSize="10" Foreground="#CDD6F4"/>
                     </ScrollViewer>
                 </Border>
@@ -262,10 +262,15 @@ $progressBar = $window.FindName("ProgressBar")
 $statusText = $window.FindName("StatusText")
 $pctText = $window.FindName("PctText")
 $consoleLog = $window.FindName("ConsoleLog")
+$consoleScroll = $window.FindName("ConsoleScroll")
 
 function Write-Log {
     param([string]$msg)
-    $consoleLog.Text += "[$(Get-Date -Format HH:mm:ss)] $msg`n"
+    $ts = Get-Date -Format HH:mm:ss
+    $window.Dispatcher.Invoke([Action]{
+        $consoleLog.Text += "[$ts] $msg`n"
+        if ($consoleScroll) { $consoleScroll.ScrollToEnd() }
+    }, [System.Windows.Threading.DispatcherPriority]::Background)
 }
 
 function Reset-UI {
