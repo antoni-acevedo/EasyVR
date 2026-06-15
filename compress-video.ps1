@@ -306,9 +306,10 @@ $global:ffDone = $false
 $global:totalFrames = 0
 $global:ffResult = @{ success = $false; error = ""; exitCode = -1 }
 $global:ffLogFile = $logFile
-$global:ffProgressFile = "$env:TEMP\easyvr_progress.txt"
+$global:ffProgressFile = "$env:TEMP\easyvr_progress.txt" -replace '\\', '/'
 $script:ffmpegState = "idle"
 $script:ffCallback = $null
+$script:progressStarted = $false
 
 function Run-FFmpeg {
     param([array]$argsList, [scriptblock]$callback)
@@ -317,6 +318,7 @@ function Run-FFmpeg {
     $timer.Stop()
     $global:ffResult = @{ success = $false; error = ""; exitCode = -1 }
     $global:ffDone = $false
+    $script:progressStarted = $false
     $script:ffCallback = $callback
     $global:totalFrames = [math]::Round($duration * ($origFps - 0.1))
     $global:ffJob = Start-Job -ScriptBlock {
@@ -364,19 +366,26 @@ $timer.Add_Tick({
     if (Test-Path $global:ffProgressFile) {
         try {
             $lines = Get-Content $global:ffProgressFile -ErrorAction Stop
+            $progressFound = $false
             foreach ($line in $lines) {
-                if ($line -match '^frame=(\d+)') { $f = [int]$matches[1] }
+                if ($line -match '^frame=(\d+)') { $f = [int]$matches[1]; $progressFound = $true }
                 if ($line -match '^progress=') {
-                    $pct = [math]::Min(99, [math]::Round($f / [math]::Max(1, $global:totalFrames) * 100))
-                    if ($pct -ne $progressBar.Value) {
-                        $progressBar.Value = $pct
-                        $pctText.Text = "$pct%"
-                        Write-Log "Progress: $f/$($global:totalFrames) frames ($pct%)"
+                    if ($f -gt 0) {
+                        $pct = [math]::Min(99, [math]::Round($f / [math]::Max(1, $global:totalFrames) * 100))
+                        if ($pct -ne $progressBar.Value) {
+                            $progressBar.Value = $pct
+                            $pctText.Text = "$pct%"
+                        }
                     }
                     $f = 0
                 }
             }
+            if ($progressFound -and -not $script:progressStarted) {
+                $script:progressStarted = $true; Write-Log "Encoding started - reading progress"
+            }
         } catch {}
+    } else {
+        if (-not $script:progressStarted) { Write-Log "Waiting for FFmpeg to start..."; $script:progressStarted = $true }
     }
 })
 
