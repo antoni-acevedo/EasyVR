@@ -9,7 +9,7 @@ export default function DevConsole({ open, onToggle, entries, onClear, onCopy }:
 
   useEffect(() => { if (ref.current) requestAnimationFrame(() => { if (ref.current) ref.current.scrollTop = ref.current.scrollHeight; }); }, [entries]);
 
-  const lineColor = (type: string, line: string) => type==='cmd'?'#60A5FA':type==='stdout'?'#8A96A8':type==='stderr'&&/error/i.test(line)?'#F87171':type==='stderr'?'#FBBF24':'#8A96A8';
+  const lineColor = (type: string, line: string) => type==='cmd'?'#60A5FA':type==='stdout'?'#FFFFFF':type==='stderr'&&/error/i.test(line)?'#F87171':type==='stderr'?'#FBBF24':'#FFFFFF';
   const prefixMap: Record<string,string> = {cmd:'$',stdout:'>',stderr:'!'};
 
   return (
@@ -22,15 +22,15 @@ export default function DevConsole({ open, onToggle, entries, onClear, onCopy }:
       {open && (
         <div>
           <div className="flex-r gap-8 mar-b-8">
-            <button onClick={onClear} style={{background:'rgba(255,255,255,0.06)',color:'#8A96A8',border:'none',borderRadius:4,padding:'4px 12px',fontSize:10,cursor:'pointer'}}>Clear</button>
-            <button onClick={onCopy} style={{background:'rgba(255,255,255,0.06)',color:'#8A96A8',border:'none',borderRadius:4,padding:'4px 12px',fontSize:10,cursor:'pointer'}}>Copy All</button>
+            <button onClick={onClear} style={{background:'rgba(255,255,255,0.06)',color:'#FFFFFF',border:'none',borderRadius:4,padding:'4px 12px',fontSize:10,cursor:'pointer'}}>Clear</button>
+            <button onClick={onCopy} style={{background:'rgba(255,255,255,0.06)',color:'#FFFFFF',border:'none',borderRadius:4,padding:'4px 12px',fontSize:10,cursor:'pointer'}}>Copy All</button>
           </div>
           <div ref={ref} className="w-full font-mono text-xs overflow-y-auto pad-12 mar-t-12" style={{
             height: 140,
             background: '#13161C',
             border: '1px solid rgba(255,255,255,0.06)',
             borderRadius: 12,
-            color: '#8A96A8',
+            color: '#FFFFFF',
             boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)',
           }}>
             {entries.length === 0 && <div style={{color:'#FFFFFF',fontStyle:'italic'}}>No output yet</div>}

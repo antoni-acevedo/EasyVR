@@ -9,7 +9,7 @@
   --accent: #4CC2F1;
   --accent-hover: #3FAEDC;
   --text-primary: #FFFFFF;
-  --text-secondary: #8A96A8;
+  --text-secondary: #FFFFFF;
   --text-muted: #717D8E;
   --border-color: rgba(255,255,255,0.08);
   --border-subtle: rgba(255,255,255,0.05);
@@ -21,7 +21,8 @@ html, body, #root {
   height: 100%;
   overflow: hidden;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-  background: var(--bg-app);
+  background: url('./bg.png') center/cover no-repeat, #181B22;
+  background-blend-mode: overlay;
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

@@ -66,7 +66,7 @@ export default function App() {
       <Sidebar mode={mode} onChange={setMode} />
       <div className="flex-1 flex-c pad-6 overflow-hidden" style={{padding:6}}>
         <Header fileName={fileName} />
-        <div className="flex-1 flex-c overflow-hidden pad-8" style={{background:'var(--bg-card)', border:'1px solid rgba(255,255,255,0.05)', borderRadius:16, boxShadow:'0 8px 24px rgba(0,0,0,0.2)'}}>
+        <div className="flex-1 flex-c overflow-hidden pad-8" style={{background:'rgba(32,36,46,0.3)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', border:'1px solid rgba(255,255,255,0.05)', borderRadius:16, boxShadow:'0 8px 24px rgba(0,0,0,0.2)'}}>
           <div className="flex-1 overflow-y-auto">
             <div className="mar-b-12">
               <div className="fluent-label">Target Size</div>

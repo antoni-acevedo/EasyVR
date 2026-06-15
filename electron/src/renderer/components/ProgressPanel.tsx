@@ -14,7 +14,7 @@ export default function ProgressPanel({ progress, statusText, logs, logsRef, res
         <div style={{width:`${progress}%`,height:'100%',borderRadius:2,background:'#4CC2F1',transition:'width 0.3s'}} />
       </div>
       <div className="flex-r justify-between mar-t-8">
-        <span style={{color:'#8A96A8',fontSize:11}}>{statusText}</span>
+        <span style={{color:'#FFFFFF',fontSize:11}}>{statusText}</span>
         <span style={{color:'#4CC2F1',fontSize:11,fontWeight:600}}>{progress}%</span>
       </div>
       {result && (
@@ -22,7 +22,7 @@ export default function ProgressPanel({ progress, statusText, logs, logsRef, res
           {result.success ? (
             <div>
               <div style={{fontSize:13,fontWeight:600,color:'#4CC2F1',marginBottom:4}}>✓ Video compressed</div>
-              <div style={{fontSize:11,color:'#8A96A8'}}>
+              <div style={{fontSize:11,color:'#FFFFFF'}}>
                 <div>Original: {result.origMb} MB</div>
                 <div>Compressed: {result.newMb} MB</div>
                 <div>Saved: {result.saved} MB</div>

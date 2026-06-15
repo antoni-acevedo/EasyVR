@@ -19,7 +19,7 @@ export default function Sidebar({ mode, onChange }: Props) {
           <div className="flex-r items-center justify-center font-bold text-white" style={{width:36, height:36, borderRadius:10, background:'linear-gradient(135deg,#6366F1,#4F46E5)'}}>E</div>
           <div>
             <div className="text-sm font-semibold" style={{color:'white'}}>EasyVR</div>
-            <div style={{color:'#8A96A8', fontSize:10}}>Video Resizer</div>
+            <div style={{color:'#FFFFFF', fontSize:10}}>Video Resizer</div>
           </div>
         </div>
         <div className="stack-4">
@@ -30,13 +30,13 @@ export default function Sidebar({ mode, onChange }: Props) {
                 className="flex-r items-center gap-12 pad-x-12 pad-y-10 cursor-pointer text-sm"
                 style={{
                   borderRadius: 10,
-                  border: '1px solid transparent',
+                  border: active ? '1px solid rgba(255,255,255,0.3)' : '1px solid transparent',
                   background: active ? 'rgba(255,255,255,0.04)' : 'transparent',
-                  color: active ? '#4CC2F1' : '#8A96A8',
+                  color: active ? '#4CC2F1' : '#FFFFFF',
                   transition: 'all 0.2s'
                 }}
                 onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; e.currentTarget.style.color = 'white'; } }}
-                onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8A96A8'; } }}
+                onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#FFFFFF'; } }}
               >
                 {item.icon} <span>{item.label}</span>
               </div>
@@ -45,14 +45,14 @@ export default function Sidebar({ mode, onChange }: Props) {
         </div>
       </div>
       <div className="stack-4">
-        <div className="flex-r items-center gap-12 pad-x-12 pad-y-10 rounded-lg text-sm cursor-pointer" style={{color:'#8A96A8', border:'1px solid transparent', transition:'all 0.2s'}}
+        <div className="flex-r items-center gap-12 pad-x-12 pad-y-10 rounded-lg text-sm cursor-pointer" style={{color:'#FFFFFF', border:'1px solid transparent', transition:'all 0.2s'}}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; e.currentTarget.style.color = 'white'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8A96A8'; }}>
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#FFFFFF'; }}>
           <Settings size={16} /> <span>Settings</span>
         </div>
-        <div className="flex-r items-center gap-12 pad-x-12 pad-y-10 rounded-lg text-sm cursor-pointer" style={{color:'#8A96A8', border:'1px solid transparent', transition:'all 0.2s'}}
+        <div className="flex-r items-center gap-12 pad-x-12 pad-y-10 rounded-lg text-sm cursor-pointer" style={{color:'#FFFFFF', border:'1px solid transparent', transition:'all 0.2s'}}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; e.currentTarget.style.color = 'white'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8A96A8'; }}>
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#FFFFFF'; }}>
           <Info size={16} /> <span>About</span>
         </div>
       </div>
