@@ -126,6 +126,7 @@ export default function App() {
     setDevConsoleOpen(true);
 
     const opts: FFmpegOptions = {
+      filePath,
       mode,
       resolution,
       fps,
