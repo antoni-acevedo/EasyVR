@@ -17,13 +17,19 @@ export default function DevConsole({ open, onToggle, entries, onClear, onCopy }:
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (ref.current) ref.current.scrollTop = ref.current.scrollHeight;
+    if (ref.current) {
+      requestAnimationFrame(() => {
+        if (ref.current) ref.current.scrollTop = ref.current.scrollHeight;
+      });
+    }
   }, [entries]);
 
-  const colorMap: Record<string, string> = {
-    cmd: '#4FC3F7',
-    stdout: '#AAA',
-    stderr: '#EF5350',
+  const lineColor = (type: string, line: string): string => {
+    if (type === 'cmd') return '#4FC3F7';
+    if (type === 'stdout') return '#AAA';
+    if (type === 'stderr' && /error/i.test(line)) return '#EF5350';
+    if (type === 'stderr') return '#FFB74D';
+    return '#AAA';
   };
   const prefixMap: Record<string, string> = {
     cmd: '$',
@@ -59,7 +65,7 @@ export default function DevConsole({ open, onToggle, entries, onClear, onCopy }:
               <div style={{ color: '#666', fontStyle: 'italic' }}>No output yet</div>
             )}
             {entries.map((e, i) => (
-              <div key={i} style={{ color: colorMap[e.type] || '#AAA' }}>
+              <div key={i} style={{ color: lineColor(e.type, e.line) }}>
                 {prefixMap[e.type] || ' '} {e.line}
               </div>
             ))}
