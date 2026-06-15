@@ -310,79 +310,73 @@ $global:ffDone = $false
 $global:totalFrames = 0
 $global:ffResult = @{ success = $false; error = ""; exitCode = -1 }
 $global:ffLogFile = $logFile
-$global:ffProgressFile = "$env:TEMP\easyvr_progress.txt"
 $global:lastPct = -1
 
 function Run-FFmpeg {
     param([array]$argsList, [scriptblock]$callback)
+    try {
     Remove-Item $global:ffLogFile -Force -ErrorAction SilentlyContinue
+    Remove-Item "$env:TEMP\easyvr_progress.txt" -Force -ErrorAction SilentlyContinue
+    [System.IO.File]::WriteAllText("$env:TEMP\easyvr_forced_log.txt", "[START] arrancando...`n")
     $global:ffResult = @{ success = $false; error = ""; exitCode = -1 }
     $global:lastPct = -1
     $global:totalFrames = [math]::Round($duration * ($origFps - 0.1))
 
-    $proc = New-Object System.Diagnostics.Process
-    $proc.StartInfo.FileName = $ffmpeg
-    $proc.StartInfo.Arguments = $argsList -join ' '
-    $proc.StartInfo.UseShellExecute = $false
-    $proc.StartInfo.CreateNoWindow = $true
-    $proc.StartInfo.RedirectStandardOutput = $true
-    $proc.StartInfo.RedirectStandardError = $true
-    $proc.StartInfo.StandardOutputEncoding = [System.Text.Encoding]::UTF8
-
-    $script:lastFrame = 0
-    $script:stderrLines = [System.Collections.ArrayList]@()
-
-    $proc.Add_OutputDataReceived({
-        $line = $_.Data
-        if (-not $line) { return }
-        if ($line -match '^frame=(\d+)') { $script:lastFrame = [int]$matches[1] }
-        if ($line -match '^progress=' -and $script:lastFrame -gt 0) {
-            $pct = [math]::Min(99, [math]::Round($script:lastFrame / [math]::Max(1, $global:totalFrames) * 100))
-            if ($pct -ne $global:lastPct) {
-                $global:lastPct = $pct
-                $window.Dispatcher.Invoke([Action]{ $progressBar.Value = $pct; $pctText.Text = "$pct%" }, [System.Windows.Threading.DispatcherPriority]::Send)
-            }
-            $script:lastFrame = 0
-        }
-    })
-
-    $proc.Add_ErrorDataReceived({
-        $line = $_.Data
-        if ($line) { $null = $script:stderrLines.Add($line) }
-    })
-
-    $proc.Start() | Out-Null
-    $proc.BeginOutputReadLine()
-    $proc.BeginErrorReadLine()
+    Write-Log "Starting FFmpeg..."
+    $p = Start-Process -FilePath $ffmpeg -ArgumentList $argsList -WindowStyle Hidden -PassThru -RedirectStandardError $global:ffLogFile
+    [System.IO.File]::AppendAllText("$env:TEMP\easyvr_forced_log.txt", "[PID] $($p.Id)`n")
 
     $frame = New-Object System.Windows.Threading.DispatcherFrame
     $waitTimer = New-Object System.Windows.Threading.DispatcherTimer
     $waitTimer.Interval = [TimeSpan]::FromMilliseconds(200)
     $waitTimer.Add_Tick({
-        if ($proc.HasExited) {
+        if ($p.HasExited) {
             $waitTimer.Stop()
             $frame.Continue = $false
+        }
+        if (Test-Path "$env:TEMP\easyvr_progress.txt") {
+            $progLines = Get-Content "$env:TEMP\easyvr_progress.txt" -Tail 3 -ErrorAction SilentlyContinue
+            $f = 0
+            foreach ($pl in $progLines) {
+                if ($pl -match '^frame=(\d+)') { $f = [int]$matches[1] }
+                if ($pl -match '^progress=' -and $f -gt 0) {
+                    $pct = [math]::Min(99, [math]::Round($f / [math]::Max(1, $global:totalFrames) * 100))
+                    if ($pct -ne $global:lastPct) {
+                        try { $progressBar.Value = $pct; $pctText.Text = "$pct%"; $global:lastPct = $pct } catch {}
+                    }
+                    $f = 0
+                }
+            }
         }
     })
     $waitTimer.Start()
     [System.Windows.Threading.Dispatcher]::PushFrame($frame)
 
-    [System.IO.File]::WriteAllText($global:ffLogFile, ($script:stderrLines -join "`n"))
-    $exitCode = $proc.ExitCode
-    $proc.Close()
+    $p.WaitForExit()
+    $exitCode = $p.ExitCode
+    [System.IO.File]::AppendAllText("$env:TEMP\easyvr_forced_log.txt", "[EXIT] Code=$exitCode HasExited=$($p.HasExited)`n")
+    $p.Close()
+
+    if (Test-Path $global:ffLogFile) {
+        [System.IO.File]::AppendAllText("$env:TEMP\easyvr_forced_log.txt", "[LOG]" + (Get-Content $global:ffLogFile -Tail 15) + "`n")
+    }
 
     $global:ffResult.exitCode = $exitCode
     $global:ffResult.success = ($exitCode -eq 0)
     if (-not $global:ffResult.success) {
         $global:ffResult.error = "FFmpeg exit code: $exitCode"
         $pctText.Text = "Error"
-        Write-Log ((Get-Content $global:ffLogFile -Tail 10) -join "`n")
     } else {
         $pctText.Text = "100%"
         $progressBar.Value = 100
     }
 
     if ($callback) { & $callback }
+    } catch {
+        $global:ffResult.error = "Run-FFmpeg error: $_"
+        $pctText.Text = "Error"
+        [System.IO.File]::AppendAllText("$env:TEMP\easyvr_forced_log.txt", "[EXCEPTION] $_`n")
+    }
 }
 
 $script:encodeState = $null  # { tag, ffArgs, audioTag, codecTag, fOut, fTmp, origSize, origMb, targetMb, bestBitrate, pass, maxPasses, adjusting }
@@ -393,7 +387,7 @@ function Start-Encode {
     $statusText.Text = $state.statusText
     $global:totalFrames = [math]::Round($duration * ($origFps - 0.1))
     if (($state.fpsTag) -and ($state.fpsTag -ne "orig")) { $global:totalFrames = [math]::Round($duration * [int]$state.fpsTag) }
-    $encArgs = $state.ffArgs + @('-b:v', "$($state.bestBitrate)k", '-movflags', '+faststart', '-progress', 'pipe:1')
+    $encArgs = $state.ffArgs + @('-b:v', "$($state.bestBitrate)k", '-movflags', '+faststart', '-progress', "$env:TEMP\easyvr_progress.txt")
     if ($state.codecTag -eq "h265") { $encArgs += '-x265-params', 'no-open-gop=1' }
     if ($state.audioTag -eq "keep") { $encArgs += '-c:a', 'copy' }
     elseif ($state.audioTag -eq "reencode") { $encArgs += '-c:a', 'aac', '-b:a', '128k' }
@@ -422,7 +416,7 @@ function On-EncodeDone {
             $s.pass++
             $statusText.Text = "Attempt $($s.pass) - bitrate $($s.bestBitrate)k"
             Write-Log "Adjusting bitrate to $($s.bestBitrate)k for attempt $($s.pass)"
-            $encArgs = $s.ffArgs + @('-b:v', "$($s.bestBitrate)k", '-movflags', '+faststart', '-progress', 'pipe:1')
+            $encArgs = $s.ffArgs + @('-b:v', "$($s.bestBitrate)k", '-movflags', '+faststart', '-progress', "$env:TEMP\easyvr_progress.txt")
             if ($s.codecTag -eq "h265") { $encArgs += '-x265-params', 'no-open-gop=1' }
             if ($s.audioTag -eq "keep") { $encArgs += '-c:a', 'copy' }
             elseif ($s.audioTag -eq "reencode") { $encArgs += '-c:a', 'aac', '-b:a', '128k' }
@@ -442,7 +436,7 @@ function On-EncodeDone {
             $s.adjusting = $true
             $statusText.Text = "Adjusting to $($s.bestBitrate)k..."
             Write-Log "Adjusting bitrate to $($s.bestBitrate)k"
-            $encArgs = $s.ffArgs + @('-b:v', "$($s.bestBitrate)k", '-movflags', '+faststart', '-progress', 'pipe:1')
+            $encArgs = $s.ffArgs + @('-b:v', "$($s.bestBitrate)k", '-movflags', '+faststart', '-progress', "$env:TEMP\easyvr_progress.txt")
             if ($s.codecTag -eq "h265") { $encArgs += '-x265-params', 'no-open-gop=1' }
             if ($s.audioTag -eq "keep") { $encArgs += '-c:a', 'copy' }
             elseif ($s.audioTag -eq "reencode") { $encArgs += '-c:a', 'aac', '-b:a', '128k' }
@@ -471,6 +465,7 @@ function On-EncodeDone {
 }
 
 $CompressBtn.Add_MouseDown({
+    try { [System.IO.File]::AppendAllText("$env:TEMP\easyvr_all.log", "[MOUSEDOWN] Started`n") } catch {}
     $CompressBtn.IsEnabled = $false
     $BtnText.Visibility = [System.Windows.Visibility]::Collapsed
     $BtnLoader.Text = "Processing..."
@@ -535,7 +530,7 @@ $CompressBtn.Add_MouseDown({
         $crfVal = [int]$crfSlider.Value
         $statusText.Text = "Encoding at CRF $crfVal..."
         Write-Log "Starting: CRF $crfVal"
-        $encArgs = $ffArgs + @('-crf', "$crfVal", '-movflags', '+faststart', '-progress', 'pipe:1')
+        $encArgs = $ffArgs + @('-crf', "$crfVal", '-movflags', '+faststart', '-progress', "$env:TEMP\easyvr_progress.txt")
         if ($codecTag -eq "h265") { $encArgs += '-x265-params', 'no-open-gop=1' }
         if ($audioTag -eq "keep") { $encArgs += '-c:a', 'copy' }
         elseif ($audioTag -eq "reencode") { $encArgs += '-c:a', 'aac', '-b:a', '128k' }
