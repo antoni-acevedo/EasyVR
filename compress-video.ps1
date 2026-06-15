@@ -320,9 +320,14 @@ function Run-FFmpeg {
     $job = Start-Job -ScriptBlock {
         param($data)
         Set-Location $env:TEMP
-        $p = Start-Process -FilePath $data.Exe -ArgumentList $data.Args -WindowStyle Hidden -Wait -PassThru -RedirectStandardError $data.LogPath
+        $p = Start-Process -FilePath $data.Exe -ArgumentList $data.Args -WindowStyle Hidden -Wait -PassThru -RedirectStandardError $data.LogPath -RedirectStandardOutput $data.ProgressPath
         $p.ExitCode
-    } -ArgumentList (,[PSCustomObject]@{ Exe = $ffmpeg; Args = $argsList; LogPath = $global:ffLogFile })
+    } -ArgumentList (,[PSCustomObject]@{
+        Exe = $ffmpeg
+        Args = $argsList
+        LogPath = $global:ffLogFile
+        ProgressPath = $global:ffProgressFile
+    })
 
     Write-Log "Job started, monitoring progress..."
 
@@ -383,7 +388,7 @@ function Start-Encode {
     $statusText.Text = $state.statusText
     $global:totalFrames = [math]::Round($duration * ($origFps - 0.1))
     if (($state.fpsTag) -and ($state.fpsTag -ne "orig")) { $global:totalFrames = [math]::Round($duration * [int]$state.fpsTag) }
-    $encArgs = $state.ffArgs + @('-b:v', "$($state.bestBitrate)k", '-movflags', '+faststart', '-progress', 'easyvr_progress.txt')
+    $encArgs = $state.ffArgs + @('-b:v', "$($state.bestBitrate)k", '-movflags', '+faststart', '-progress', 'pipe:1')
     if ($state.codecTag -eq "h265") { $encArgs += '-x265-params', 'no-open-gop=1' }
     if ($state.audioTag -eq "keep") { $encArgs += '-c:a', 'copy' }
     elseif ($state.audioTag -eq "reencode") { $encArgs += '-c:a', 'aac', '-b:a', '128k' }
@@ -412,7 +417,7 @@ function On-EncodeDone {
             $s.pass++
             $statusText.Text = "Attempt $($s.pass) - bitrate $($s.bestBitrate)k"
             Write-Log "Adjusting bitrate to $($s.bestBitrate)k for attempt $($s.pass)"
-            $encArgs = $s.ffArgs + @('-b:v', "$($s.bestBitrate)k", '-movflags', '+faststart', '-progress', 'easyvr_progress.txt')
+            $encArgs = $s.ffArgs + @('-b:v', "$($s.bestBitrate)k", '-movflags', '+faststart', '-progress', 'pipe:1')
             if ($s.codecTag -eq "h265") { $encArgs += '-x265-params', 'no-open-gop=1' }
             if ($s.audioTag -eq "keep") { $encArgs += '-c:a', 'copy' }
             elseif ($s.audioTag -eq "reencode") { $encArgs += '-c:a', 'aac', '-b:a', '128k' }
@@ -432,7 +437,7 @@ function On-EncodeDone {
             $s.adjusting = $true
             $statusText.Text = "Adjusting to $($s.bestBitrate)k..."
             Write-Log "Adjusting bitrate to $($s.bestBitrate)k"
-            $encArgs = $s.ffArgs + @('-b:v', "$($s.bestBitrate)k", '-movflags', '+faststart', '-progress', 'easyvr_progress.txt')
+            $encArgs = $s.ffArgs + @('-b:v', "$($s.bestBitrate)k", '-movflags', '+faststart', '-progress', 'pipe:1')
             if ($s.codecTag -eq "h265") { $encArgs += '-x265-params', 'no-open-gop=1' }
             if ($s.audioTag -eq "keep") { $encArgs += '-c:a', 'copy' }
             elseif ($s.audioTag -eq "reencode") { $encArgs += '-c:a', 'aac', '-b:a', '128k' }
@@ -525,7 +530,7 @@ $CompressBtn.Add_MouseDown({
         $crfVal = [int]$crfSlider.Value
         $statusText.Text = "Encoding at CRF $crfVal..."
         Write-Log "Starting: CRF $crfVal"
-        $encArgs = $ffArgs + @('-crf', "$crfVal", '-movflags', '+faststart', '-progress', 'easyvr_progress.txt')
+        $encArgs = $ffArgs + @('-crf', "$crfVal", '-movflags', '+faststart', '-progress', 'pipe:1')
         if ($codecTag -eq "h265") { $encArgs += '-x265-params', 'no-open-gop=1' }
         if ($audioTag -eq "keep") { $encArgs += '-c:a', 'copy' }
         elseif ($audioTag -eq "reencode") { $encArgs += '-c:a', 'aac', '-b:a', '128k' }
