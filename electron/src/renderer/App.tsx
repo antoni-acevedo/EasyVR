@@ -157,7 +157,7 @@ export default function App() {
       <Header fileName={fileName} fileSize={fileSize} />
 
       {/* Main content */}
-      <div className="flex-1 overflow-y-auto px-6 pb-4 pt-2">
+      <div className="flex-1 overflow-y-auto px-8 pb-6 pt-4">
         {/* Mode */}
         <ModeSelector mode={mode} onChange={setMode} />
 
@@ -185,29 +185,32 @@ export default function App() {
         >
           {isEncoding ? 'COMPRESSING...' : 'COMPRESS VIDEO'}
         </button>
+        {/* Scrollable bottom area */}
+        <div style={{ maxHeight: 320, overflowY: 'auto', marginTop: 4 }}>
+          {/* Progress */}
+          {(isEncoding || showResult) && (
+            <ProgressPanel
+              progress={progress}
+              statusText={statusText}
+              logs={logs}
+              logsRef={logsRef as React.RefObject<HTMLDivElement>}
+              result={showResult}
+              onCloseResult={() => setShowResult(null)}
+            />
+          )}
 
-        {/* Progress */}
-        {(isEncoding || showResult) && (
-          <ProgressPanel
-            progress={progress}
-            statusText={statusText}
-            logs={logs}
-            logsRef={logsRef as React.RefObject<HTMLDivElement>}
-            result={showResult}
-            onCloseResult={() => setShowResult(null)}
+          {/* DevConsole */}
+          <DevConsole
+            open={devConsoleOpen}
+            onToggle={() => setDevConsoleOpen(!devConsoleOpen)}
+            entries={rawEntries}
+            onClear={() => setRawEntries([])}
+            onCopy={() => {
+              const text = rawEntries.map(e => `${e.type}: ${e.line}`).join('\n');
+              navigator.clipboard.writeText(text);
+            }}
           />
-        )}
-        {/* DevConsole (always visible) */}
-        <DevConsole
-          open={devConsoleOpen}
-          onToggle={() => setDevConsoleOpen(!devConsoleOpen)}
-          entries={rawEntries}
-          onClear={() => setRawEntries([])}
-          onCopy={() => {
-            const text = rawEntries.map(e => `${e.type}: ${e.line}`).join('\n');
-            navigator.clipboard.writeText(text);
-          }}
-        />
+        </div>
       </div>
     </div>
   );
