@@ -7,6 +7,25 @@ let mainWindow: BrowserWindow | null = null;
 
 const isDev = !fs.existsSync(path.join(__dirname, '../renderer/index.html'));
 
+if (!app.requestSingleInstanceLock()) {
+  process.exit(0);
+}
+
+let pendingFiles: string[] = [];
+
+app.on('second-instance', (_event, commandLine) => {
+  const files = commandLine.slice(2).filter(f => f !== '.');
+  if (files.length > 0) {
+    console.log('EasyVR second-instance files:', files);
+    pendingFiles.push(...files);
+    if (mainWindow) {
+      mainWindow.webContents.send('new-files', files);
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  }
+});
+
 function createWindow(): void {
     mainWindow = new BrowserWindow({
     width: 480,
@@ -61,15 +80,8 @@ ipcMain.on('window-maximize', () => {
 });
 ipcMain.on('window-close', () => mainWindow?.close());
 
-const VIDEO_EXTENSIONS = new Set([
-  '.mp4', '.mkv', '.avi', '.mov', '.wmv', '.m4v', '.ts', '.mts',
-  '.3gp', '.webm', '.flv', '.dvr',
-]);
-
 function getVideoFiles(): string[] {
-  return process.argv.slice(2).filter(a =>
-    VIDEO_EXTENSIONS.has(path.extname(a).toLowerCase()),
-  );
+  return process.argv.slice(2);
 }
 
 // Get file path from command line arg %1 (argv[0]=electron, argv[1]=".", argv[2]=path)
@@ -79,11 +91,18 @@ ipcMain.handle('get-file-path', () => {
   return fp;
 });
 
-// Get all video files from command line (batch mode with %*)
+// Get all video files from command line + pending secondary instances
 ipcMain.handle('get-files', () => {
-  const files = getVideoFiles();
-  console.log('EasyVR files:', files);
-  return files;
+  const initialFiles = getVideoFiles().filter(f => f !== '.');
+  const allFiles = [...initialFiles, ...pendingFiles];
+  pendingFiles = [];
+  console.log('EasyVR files:', allFiles);
+  return allFiles;
+});
+
+// Debug: return raw process.argv for troubleshooting
+ipcMain.handle('get-raw-argv', () => {
+  return process.argv;
 });
 
 // Open native file dialog
