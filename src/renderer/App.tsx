@@ -47,8 +47,17 @@ export default function App() {
   useEffect(() => {
     (async () => {
       const f = await window.electronAPI.getFiles();
+      const argv = await window.electronAPI.getRawArgv();
+      setRawEntries(p => [...p, { type: 'cmd' as const, line: `argv: ${JSON.stringify(argv)}` }]);
       if (f && f.length > 0) setFiles(f);
     })();
+  }, []);
+
+  useEffect(() => {
+    window.electronAPI.onNewFiles((newFiles: string[]) => {
+      setRawEntries(p => [...p, { type: 'cmd' as const, line: `new-files: ${JSON.stringify(newFiles)}` }]);
+      setFiles(p => [...p, ...newFiles.filter(f => !p.includes(f))]);
+    });
   }, []);
 
   const addLog = useCallback((msg: string) => setLogs(p => [...p, `[${new Date().toLocaleTimeString()}] ${msg}`]), []);
