@@ -45,9 +45,12 @@ Source: "node_modules\electron\dist\libGLESv2.dll"; DestDir: "{app}\electron"; F
 Source: "node_modules\electron\dist\LICENSE"; DestDir: "{app}\electron"; Flags: ignoreversion
 Source: "node_modules\electron\dist\LICENSES.chromium.html"; DestDir: "{app}\electron"; Flags: ignoreversion
 Source: "node_modules\electron\dist\resources\*"; DestDir: "{app}\electron\resources"; Flags: ignoreversion recursesubdirs
+Source: "node_modules\electron\dist\resources.pak"; DestDir: "{app}\electron"; Flags: ignoreversion
 Source: "node_modules\electron\dist\snapshot_blob.bin"; DestDir: "{app}\electron"; Flags: ignoreversion
+Source: "node_modules\electron\dist\version"; DestDir: "{app}\electron"; Flags: ignoreversion
 Source: "node_modules\electron\dist\v8_context_snapshot.bin"; DestDir: "{app}\electron"; Flags: ignoreversion
 Source: "node_modules\electron\dist\vk_swiftshader.dll"; DestDir: "{app}\electron"; Flags: ignoreversion
+Source: "node_modules\electron\dist\vk_swiftshader_icd.json"; DestDir: "{app}\electron"; Flags: ignoreversion
 Source: "node_modules\electron\dist\vulkan-1.dll"; DestDir: "{app}\electron"; Flags: ignoreversion
 
 ; Electron app files (compiled)
