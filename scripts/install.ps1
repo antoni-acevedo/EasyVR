@@ -62,7 +62,7 @@ if ($InstallPath) {
     $ffmpegDir = Join-Path $scriptDir "ffmpeg"
 }
 $cmdSingle = "`"$scriptPath`" `"%1`""
-$cmdMulti = "`"$scriptPath`" %*"
+$cmdMulti = "`"$scriptPath`" `"%1`""
 
 function Add-MenuItem {
     param([string]$RegKey, [string]$MenuName, [string]$DisplayName, [string]$Command)
