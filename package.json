@@ -10,7 +10,7 @@
     "dev": "npm run build:main && concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
     "package": "npm run build && electron-builder --win portable",
     "package:dir": "npm run build && electron-builder --win portable --dir",
-    "installer": "npm run build && iscc installer.iss"
+    "installer": "npm run build && \"C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe\" installer.iss"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
