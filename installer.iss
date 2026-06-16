@@ -39,6 +39,7 @@ Source: "node_modules\electron\dist\chrome_200_percent.pak"; DestDir: "{app}\ele
 Source: "node_modules\electron\dist\d3dcompiler_47.dll"; DestDir: "{app}\electron"; Flags: ignoreversion
 Source: "node_modules\electron\dist\electron.exe"; DestDir: "{app}\electron"; Flags: ignoreversion
 Source: "node_modules\electron\dist\ffmpeg.dll"; DestDir: "{app}\electron"; Flags: ignoreversion
+Source: "node_modules\electron\dist\icudtl.dat"; DestDir: "{app}\electron"; Flags: ignoreversion
 Source: "node_modules\electron\dist\libEGL.dll"; DestDir: "{app}\electron"; Flags: ignoreversion
 Source: "node_modules\electron\dist\libGLESv2.dll"; DestDir: "{app}\electron"; Flags: ignoreversion
 Source: "node_modules\electron\dist\LICENSE"; DestDir: "{app}\electron"; Flags: ignoreversion
