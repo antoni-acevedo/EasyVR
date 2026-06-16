@@ -61,17 +61,18 @@ if ($InstallPath) {
     $icon = Join-Path $scriptDir "EasyVR.ico"
     $ffmpegDir = Join-Path $scriptDir "ffmpeg"
 }
-$cmd = "`"$scriptPath`" `"%1`""
+$cmdSingle = "`"$scriptPath`" `"%1`""
+$cmdMulti = "`"$scriptPath`" %*"
 
 function Add-MenuItem {
-    param([string]$RegKey)
-    $subPath = "Software\Classes\$RegKey\shell\EasyVRReduceSize"
+    param([string]$RegKey, [string]$MenuName, [string]$DisplayName, [string]$Command)
+    $subPath = "Software\Classes\$RegKey\shell\$MenuName"
     $reg = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey($subPath)
-    $reg.SetValue("", "EasyVR - Reduce Video Size")
+    $reg.SetValue("", $DisplayName)
     $reg.SetValue("Icon", $icon)
     $reg.Close()
     $cmdReg = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey("$subPath\command")
-    $cmdReg.SetValue("", $cmd)
+    $cmdReg.SetValue("", $Command)
     $cmdReg.Close()
 }
 
@@ -90,18 +91,22 @@ $progIds = @{
 }
 
 foreach ($kvp in $progIds.GetEnumerator()) {
-    Add-MenuItem $kvp.Value
-    $count++
+    Add-MenuItem $kvp.Value "EasyVRReduceSize" "EasyVR - Reduce Video Size" $cmdSingle
+    Add-MenuItem $kvp.Value "EasyVRReduceAllSelected" "EasyVR - Reduce All Selected" $cmdMulti
+    $count += 2
 }
 
 foreach ($ext in @(".webm", ".flv")) {
-    Add-MenuItem $ext
-    $count++
+    Add-MenuItem $ext "EasyVRReduceSize" "EasyVR - Reduce Video Size" $cmdSingle
+    Add-MenuItem $ext "EasyVRReduceAllSelected" "EasyVR - Reduce All Selected" $cmdMulti
+    $count += 2
 }
 
-Add-MenuItem "*"
-$count++
+Add-MenuItem "*" "EasyVRReduceSize" "EasyVR - Reduce Video Size" $cmdSingle
+Add-MenuItem "*" "EasyVRReduceAllSelected" "EasyVR - Reduce All Selected" $cmdMulti
+$count += 2
 
-Write-Host "Context menu added for $count video targets." -ForegroundColor Green
+Write-Host "Context menu added for $count menu entries." -ForegroundColor Green
 Write-Host "`nInstallation complete." -ForegroundColor Cyan
-Write-Host "Right-click any video -> 'EasyVR - Reduce Video Size'" -ForegroundColor White
+Write-Host "Right-click 1 video -> 'EasyVR - Reduce Video Size'" -ForegroundColor White
+Write-Host "Right-click N videos -> 'EasyVR - Reduce All Selected'" -ForegroundColor White

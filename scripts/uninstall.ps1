@@ -7,11 +7,13 @@ foreach ($old in $oldKeys) {
     $count++
 }
 
-# Clean new English key
-$newKeys = @(Get-ChildItem "HKCU:\Software\Classes" -Recurse -Depth 3 -ErrorAction SilentlyContinue | Where-Object { $_.PSPath -like "*EasyVRReduceSize" })
-foreach ($entry in $newKeys) {
-    Remove-Item -LiteralPath $entry.PSPath -Recurse -Force -ErrorAction SilentlyContinue
-    $count++
+# Clean new English keys
+foreach ($name in @("EasyVRReduceSize", "EasyVRReduceAllSelected")) {
+    $newKeys = @(Get-ChildItem "HKCU:\Software\Classes" -Recurse -Depth 3 -ErrorAction SilentlyContinue | Where-Object { $_.PSPath -like "*$name" })
+    foreach ($entry in $newKeys) {
+        Remove-Item -LiteralPath $entry.PSPath -Recurse -Force -ErrorAction SilentlyContinue
+        $count++
+    }
 }
 
 Write-Host "Context menu removed from $count entries." -ForegroundColor Green

@@ -1,13 +1,18 @@
 import React from 'react';
 import { Minus, Square, X } from 'lucide-react';
 
-interface Props { fileName: string; }
+interface Props { fileName: string; fileCount?: number; batchCurrent?: string; }
 
-export default function Header({ fileName }: Props) {
+export default function Header({ fileName, fileCount, batchCurrent }: Props) {
+  const title = batchCurrent
+    ? batchCurrent
+    : fileCount && fileCount > 1
+      ? `${fileCount} files selected`
+      : fileName;
   return (
     <div className="flex-r items-center justify-between flex-shrink-0 drag-region pad-x-8" style={{height:40}}>
       <div className="flex-r items-center gap-8">
-        {fileName && <span style={{color:'#FFFFFF',fontSize:12,fontWeight:300}}>{fileName}</span>}
+        {title && <span style={{color:'#FFFFFF',fontSize:12,fontWeight:300}}>{title}</span>}
       </div>
       <div className="flex-r items-center no-drag" style={{gap:4}}>
         <button onClick={()=>window.electronAPI.minimize()} className="flex-r items-center justify-center" style={{width:36,height:28,borderRadius:6,border:'none',background:'transparent',cursor:'pointer',color:'#FFFFFF',transition:'all 0.15s'}}

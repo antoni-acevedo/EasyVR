@@ -362,13 +362,12 @@ function runOnePass(
 export async function compress(
   win: BrowserWindow,
   opts: FFmpegOptions,
-): Promise<void> {
+): Promise<DoneData | null> {
   findFFmpeg();
 
-  // Validate file path exists
   if (!fs.existsSync(opts.filePath)) {
     sendError(win, `File not found: ${opts.filePath}`);
-    return;
+    return null;
   }
 
   try {
@@ -386,22 +385,67 @@ export async function compress(
 
     if (result.exitCode !== 0) {
       sendError(win, `FFmpeg exit code: ${result.exitCode}`);
-      return;
+      return null;
     }
 
     const finalSize = getFileSize(result.outputPath);
     const saved = ((origSize - finalSize) / (1024 * 1024)).toFixed(1);
     const finalMb = (finalSize / (1024 * 1024)).toFixed(1);
 
-    sendDone(win, {
+    const doneData: DoneData = {
       success: true,
       exitCode: 0,
       outputPath: result.outputPath,
       originalSize: origSize,
       finalSize,
-    });
+    };
+
+    sendDone(win, doneData);
     sendLog(win, `Done! ${origMb} MB → ${finalMb} MB (saved ${saved} MB)`);
+    return doneData;
   } catch (err: any) {
     sendError(win, err.message || String(err));
+    return null;
+  }
+}
+
+export async function compressBatch(
+  win: BrowserWindow,
+  files: string[],
+  baseOpts: Omit<FFmpegOptions, 'filePath'>,
+): Promise<void> {
+  findFFmpeg();
+
+  for (let i = 0; i < files.length; i++) {
+    const filePath = files[i];
+    const fileName = path.basename(filePath);
+
+    sendLog(win, `--- File ${i + 1}/${files.length}: ${fileName} ---`);
+    if (!win.isDestroyed()) {
+      win.webContents.send('batch-file-start', {
+        fileIndex: i + 1,
+        totalFiles: files.length,
+        fileName,
+      });
+    }
+
+    const result = await compress(win, { ...baseOpts, filePath } as FFmpegOptions);
+
+    if (!win.isDestroyed()) {
+      win.webContents.send('batch-file-complete', {
+        fileIndex: i + 1,
+        totalFiles: files.length,
+        fileName,
+        success: result !== null,
+        originalSize: result?.originalSize ?? 0,
+        finalSize: result?.finalSize ?? 0,
+        outputPath: result?.outputPath ?? '',
+      });
+    }
+  }
+
+  sendLog(win, `--- Batch complete: ${files.length} file(s) processed ---`);
+  if (!win.isDestroyed()) {
+    win.webContents.send('batch-done', { totalFiles: files.length });
   }
 }

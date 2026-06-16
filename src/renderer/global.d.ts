@@ -22,17 +22,43 @@ export interface RawData {
   line: string;
 }
 
+export interface BatchFileStartData {
+  fileIndex: number;
+  totalFiles: number;
+  fileName: string;
+}
+
+export interface BatchFileCompleteData {
+  fileIndex: number;
+  totalFiles: number;
+  fileName: string;
+  success: boolean;
+  originalSize: number;
+  finalSize: number;
+  outputPath: string;
+}
+
+export interface BatchDoneData {
+  totalFiles: number;
+}
+
 export interface ElectronAPI {
   minimize: () => void;
   maximize: () => void;
   close: () => void;
   getFilePath: () => Promise<string>;
+  getFiles: () => Promise<string[]>;
+  openFileDialog: () => Promise<string[]>;
   startCompression: (options: any) => void;
+  startBatchCompression: (files: string[], options: any) => void;
   onProgress: (callback: (data: ProgressData) => void) => void;
   onDone: (callback: (data: DoneData) => void) => void;
   onError: (callback: (data: string) => void) => void;
   onLog: (callback: (data: string) => void) => void;
   onRaw: (callback: (data: RawData) => void) => void;
+  onBatchFileStart: (callback: (data: BatchFileStartData) => void) => void;
+  onBatchFileComplete: (callback: (data: BatchFileCompleteData) => void) => void;
+  onBatchDone: (callback: (data: BatchDoneData) => void) => void;
   removeAllListeners: () => void;
 }
 

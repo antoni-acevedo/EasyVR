@@ -112,6 +112,136 @@ html, body, #root {
 .console-box::-webkit-scrollbar-track { background: transparent; }
 .console-box::-webkit-scrollbar-thumb { background: rgba(138,150,168,0.1); border-radius: 4px; }
 
+/* File Picker */
+.file-picker-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 220px;
+  padding: 32px 24px;
+  border: 1px dashed var(--border-color);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(255,255,255,0.02);
+}
+.file-picker-box:hover {
+  border-color: var(--accent);
+  background: rgba(76,194,241,0.06);
+}
+.file-picker-icon { color: var(--text-muted); }
+.file-picker-box:hover .file-picker-icon { color: var(--accent); }
+.file-picker-text { font-size: 14px; color: var(--text-primary); font-weight: 500; }
+.file-picker-sub { font-size: 11px; color: var(--text-muted); text-align: center; }
+.file-picker-btn {
+  margin-top: 4px;
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #13161C;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.file-picker-btn:hover { background: var(--accent-hover); }
+
+/* File List */
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 96px;
+  overflow-y: auto;
+  padding: 6px 8px;
+  background: var(--bg-input);
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+}
+.file-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.file-list-item:hover { background: rgba(255,255,255,0.04); }
+.file-list-name { font-size: 11px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.file-list-remove {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.file-list-remove:hover { background: rgba(239,68,68,0.2); color: #ef4444; }
+
+/* Batch Result */
+.batch-result {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+}
+.batch-result-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+.batch-result-table {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+}
+.batch-result-row {
+  display: grid;
+  grid-template-columns: 1fr 60px 60px 60px 16px;
+  gap: 8px;
+  padding: 4px 0;
+  align-items: center;
+}
+.batch-result-row-header {
+  color: var(--text-muted);
+  font-weight: 500;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 6px;
+}
+.batch-result-row-total {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 6px;
+  font-weight: 600;
+}
+.batch-result-file { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.batch-result-close {
+  margin-top: 12px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #13161C;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.batch-result-close:hover { background: var(--accent-hover); }
+
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
