@@ -11,7 +11,6 @@ function createWindow(): void {
     mainWindow = new BrowserWindow({
     width: 480,
     height: 360,
-    title: 'EasyVR',
     frame: false,
     transparent: true,
     backgroundColor: '#00000000',

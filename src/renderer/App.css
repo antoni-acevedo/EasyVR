@@ -21,7 +21,11 @@ html, body, #root {
   height: 100%;
   overflow: hidden;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-  background: url('./bg.png') center/cover no-repeat, #181b22d3;
+  background-image: url('./bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #181B22;
   background-blend-mode: overlay;
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
