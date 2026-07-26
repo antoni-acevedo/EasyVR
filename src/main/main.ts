@@ -27,13 +27,13 @@ app.on('second-instance', (_event, commandLine) => {
 });
 
 function createWindow(): void {
-    mainWindow = new BrowserWindow({
-    width: 480,
-    height: 360,
+  mainWindow = new BrowserWindow({
+    width: 780,
+    height: 560,
+    minWidth: 780,
+    minHeight: 560,
     frame: false,
-    transparent: true,
-    backgroundColor: '#00000000',
-    hasShadow: false,
+    backgroundColor: '#F4F6FB',
     icon: path.join(__dirname, '../../assets/icon.png'),
     show: false,
     webPreferences: {
