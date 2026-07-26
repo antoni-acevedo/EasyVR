@@ -63,6 +63,8 @@ export default function App() {
   useEffect(() => {
     (async () => {
       const f = await window.electronAPI.getFiles();
+      const argv = await window.electronAPI.getRawArgv();
+      setRawEntries(p => [...p, { type: 'cmd' as const, line: `argv: ${JSON.stringify(argv)}` }]);
       if (f && f.length > 0) setFiles(f);
     })();
   }, []);

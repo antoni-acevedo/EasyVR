@@ -48,6 +48,7 @@ export interface ElectronAPI {
   close: () => void;
   getFilePath: () => Promise<string>;
   getFiles: () => Promise<string[]>;
+  getRawArgv: () => Promise<string[]>;
   openFileDialog: () => Promise<string[]>;
   getPathForFile: (file: File) => string;
   openExternal: (url: string) => void;
@@ -61,6 +62,7 @@ export interface ElectronAPI {
   onBatchFileStart: (callback: (data: BatchFileStartData) => void) => void;
   onBatchFileComplete: (callback: (data: BatchFileCompleteData) => void) => void;
   onBatchDone: (callback: (data: BatchDoneData) => void) => void;
+  onNewFiles: (callback: (files: string[]) => void) => void;
   removeAllListeners: () => void;
 }
 

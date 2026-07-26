@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // File
   getFilePath: () => ipcRenderer.invoke('get-file-path'),
   getFiles: () => ipcRenderer.invoke('get-files'),
+  getRawArgv: () => ipcRenderer.invoke('get-raw-argv'),
   openFileDialog: () => ipcRenderer.invoke('open-file-dialog'),
 
   // Drag & drop — resolve a dropped File to its absolute filesystem path
@@ -56,6 +57,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('batch-done', (_e: unknown, data: unknown) => callback(data));
   },
 
+  onNewFiles: (callback: (files: string[]) => void) => {
+    ipcRenderer.on('new-files', (_e: unknown, files: string[]) => callback(files));
+  },
+
   removeAllListeners: () => {
     ipcRenderer.removeAllListeners('compression-progress');
     ipcRenderer.removeAllListeners('compression-done');
@@ -65,6 +70,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.removeAllListeners('batch-file-start');
     ipcRenderer.removeAllListeners('batch-file-complete');
     ipcRenderer.removeAllListeners('batch-done');
+    ipcRenderer.removeAllListeners('new-files');
   },
 });
 
