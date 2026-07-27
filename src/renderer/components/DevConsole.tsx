@@ -33,7 +33,7 @@ export default function DevConsole({ open, onToggle, entries, onClear, onCopy }:
   return (
     <div style={{ marginTop: 14 }}>
       <div className="flex items-center justify-between" style={{ padding: '12px 0' }}>
-        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+        <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
           DEVCONSOLE ({entries.length} lines)
         </span>
         <button

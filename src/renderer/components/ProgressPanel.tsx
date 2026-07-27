@@ -59,7 +59,7 @@ export default function ProgressPanel({ progress, statusText, result, onCloseRes
             <div>
               <div className="flex items-center gap-2" style={{ marginBottom: 8 }}>
                 <CheckCircle2 size={16} style={{ color: 'var(--success)' }} />
-                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--success)' }}>
+                <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '-0.01em', color: 'var(--success)' }}>
                   Video compressed
                 </span>
               </div>

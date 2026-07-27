@@ -48,10 +48,10 @@ export default function SplashScreen({ visible, onDone }: Props) {
         />
       </div>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+        <div style={{ fontSize: 26, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
           EasyVR
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', marginTop: 4, letterSpacing: '0.04em' }}>
           Video Resizer
         </div>
       </div>

@@ -56,8 +56,8 @@ function Section({ icon, title, desc, children }: { icon: React.ReactNode; title
           {icon}
         </div>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{title}</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{desc}</div>
+          <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>{title}</div>
+          <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>{desc}</div>
         </div>
       </div>
       <div className="flex flex-col" style={{ gap: 10 }}>{children}</div>

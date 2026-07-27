@@ -45,8 +45,8 @@ export default function DonationCard() {
         <Heart size={18} strokeWidth={2} fill="#EF4444" />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: '#B91C1C' }}>Support EasyVR</div>
-        <div style={{ fontSize: 10, color: 'var(--text-secondary)', lineHeight: 1.3 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)', color: '#B91C1C', letterSpacing: '-0.01em' }}>Support EasyVR</div>
+        <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-secondary)', lineHeight: 1.3 }}>
           Buy us a coffee
         </div>
       </div>

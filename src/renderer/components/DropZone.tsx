@@ -83,10 +83,10 @@ export default function DropZone({ onFilesSelected }: Props) {
         >
           <FolderOpen size={40} strokeWidth={1.5} />
         </div>
-        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>
+        <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>
           No file selected
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', maxWidth: 320 }}>
+        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', textAlign: 'center', maxWidth: 320 }}>
           Click to browse or drag a video file here
         </div>
         <div style={{ marginTop: 8 }}>

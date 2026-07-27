@@ -27,7 +27,7 @@ export default function BatchResult({ results, onClose }: Props) {
     <div className="surface" style={{ padding: 18, marginTop: 14 }}>
       <div className="flex items-center gap-2" style={{ marginBottom: 14 }}>
         <CheckCircle2 size={16} style={{ color: 'var(--accent)' }} />
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+        <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>
           Processed {results.length} file{results.length === 1 ? '' : 's'} — {successCount} successful
         </span>
       </div>

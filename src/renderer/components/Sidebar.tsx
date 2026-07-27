@@ -71,11 +71,13 @@ function NavItem({
         <span style={{
           fontSize: 13,
           fontWeight: 600,
+          fontFamily: 'var(--font-display)',
+          letterSpacing: '-0.01em',
           color: active ? 'var(--accent)' : 'var(--text-primary)',
         }}>
           {label}
         </span>
-        <span style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.3 }}>{desc}</span>
+        <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.3 }}>{desc}</span>
       </div>
     </button>
   );
@@ -126,6 +128,8 @@ export default function Sidebar({ view, onChange }: Props) {
             textAlign: 'center',
             padding: '6px 0 2px 0',
             fontSize: 10,
+            fontWeight: 500,
+            fontFamily: 'var(--font-display)',
             color: 'var(--text-muted)',
             letterSpacing: '0.04em',
           }}

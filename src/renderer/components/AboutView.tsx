@@ -17,8 +17,8 @@ export default function AboutView() {
             <Info size={26} />
           </div>
           <div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>EasyVR</div>
-            <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Video Resizer · version 2.0.0</div>
+            <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>EasyVR</div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)' }}>Video Resizer · version 2.0.0</div>
           </div>
         </div>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
@@ -52,8 +52,8 @@ function Item({ icon, title, desc }: { icon: React.ReactNode; title: string; des
         {icon}
       </div>
       <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{title}</div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{desc}</div>
+        <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>{title}</div>
+        <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>{desc}</div>
       </div>
     </div>
   );

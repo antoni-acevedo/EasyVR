@@ -20,8 +20,9 @@ export default function TopBar({ title, description }: Props) {
         <h1 style={{
           fontSize: 26,
           fontWeight: 700,
+          fontFamily: 'var(--font-display)',
           color: 'var(--text-primary)',
-          letterSpacing: '-0.01em',
+          letterSpacing: '-0.02em',
           lineHeight: 1.15,
         }}>
           {title}

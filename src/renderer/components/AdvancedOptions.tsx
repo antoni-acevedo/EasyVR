@@ -30,7 +30,7 @@ export default function AdvancedOptions(p: Props) {
           fontFamily: 'inherit',
         }}
       >
-        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+        <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-primary)' }}>
           Advanced
         </span>
         <ChevronDown
