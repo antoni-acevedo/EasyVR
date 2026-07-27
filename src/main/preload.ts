@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   // Window controls
@@ -10,6 +10,21 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getFilePath: () => ipcRenderer.invoke('get-file-path'),
   getFiles: () => ipcRenderer.invoke('get-files'),
   openFileDialog: () => ipcRenderer.invoke('open-file-dialog'),
+
+  // Drag & drop — resolve a dropped File to its absolute filesystem path
+  getPathForFile: (file: File) => {
+    try {
+      return webUtils.getPathForFile(file);
+    } catch {
+      return '';
+    }
+  },
+
+  // External links (e.g. donation page)
+  openExternal: (url: string) => {
+    const safe = /^(https?:|mailto:)/i.test(url) ? url : '';
+    if (safe) require('electron').shell.openExternal(safe);
+  },
 
   // FFmpeg — single file
   startCompression: (options: unknown) => ipcRenderer.send('start-compression', options),

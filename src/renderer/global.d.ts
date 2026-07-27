@@ -49,6 +49,8 @@ export interface ElectronAPI {
   getFilePath: () => Promise<string>;
   getFiles: () => Promise<string[]>;
   openFileDialog: () => Promise<string[]>;
+  getPathForFile: (file: File) => string;
+  openExternal: (url: string) => void;
   startCompression: (options: any) => void;
   startBatchCompression: (files: string[], options: any) => void;
   onProgress: (callback: (data: ProgressData) => void) => void;
